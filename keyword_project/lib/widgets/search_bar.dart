@@ -1,52 +1,57 @@
 import 'package:flutter/material.dart';
 
-class MySearchBar extends StatefulWidget {
-  const MySearchBar({super.key});
+import 'package:keyword_project/widgets/filter.dart';
+
+class PostSearchBar extends StatefulWidget {
+  const PostSearchBar({super.key});
 
   @override
-  State<MySearchBar> createState() => _MySearchBarState();
+  State<PostSearchBar> createState() => _PostSearchBarState();
 }
 
-class _MySearchBarState extends State<MySearchBar> {
-  List<String> platforms = ['YouTube', 'Instegram', 'Pixnet'];
-  List<String> selectedPlatforms = [];
-  bool isDark = false;
-
+class _PostSearchBarState extends State<PostSearchBar> {
   @override
   Widget build(BuildContext context) {
     return SearchAnchor(
-      dividerColor: Theme.of(context).colorScheme.onBackground,
-      viewBackgroundColor: Theme.of(context).colorScheme.onPrimary,
       builder: (BuildContext context, SearchController controller) {
         return SearchBar(
           controller: controller,
-          backgroundColor: MaterialStateColor.resolveWith(
-            (states) => Theme.of(context).colorScheme.onPrimary
+          leading: IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: (){}
           ),
-          padding: const MaterialStatePropertyAll<EdgeInsets>(
-            EdgeInsets.symmetric(horizontal: 16.0)
-          ),
+          trailing: <Widget>[
+            IconButton(onPressed: (){}, icon: const Icon(Icons.tune)),
+          ],
           onTap: () {
             controller.openView();
           },
           onChanged: (_) {
             controller.openView();
           },
-          leading: const Icon(Icons.search),
         );
       }, 
-      suggestionsBuilder: (BuildContext context, SearchController controller) {
-        return List<ListTile>.generate(5, (int index) {
-          final String item = 'item $index';
-          return ListTile(
-            title: Text(item),
+      suggestionsBuilder: (BuildContext context, SearchController controller) {       
+        return <Widget>[
+          const Padding(
+            padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
+            child: Row(
+              children: [
+                PlatformOptions(),
+              ],
+            ),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.history),
+            title: const Text("除濕機"),
             onTap: () {
               setState(() {
-                controller.closeView(item);
+                controller.closeView("除濕機");
               });
             },
-          );
-        });
+          ),
+        ];
       }
     );
   }
