@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:keyword_project/modles/pixnet_posts_model.dart';
 import 'package:keyword_project/provider/pixnet_posts_provider.dart';
@@ -45,7 +46,7 @@ class PostTable extends StatefulWidget {
 }
 
 class _PostTableState extends State<PostTable> {
-  List<Data>? filterData;
+  List<Article> filterData = [];
   int rowsPerPage = 10;
   int currentPage = 0;
   int sortIndex = 0;
@@ -56,40 +57,41 @@ class _PostTableState extends State<PostTable> {
     switch (columnIndex) {
       case 0:
         if (ascending) {
-          filterData!.sort((a, b) => a.name!.compareTo(b.name!));
+          filterData.sort((a, b) => a.user.name.compareTo(b.user.name!));
         } else {
-          filterData!.sort((a, b) => b.name!.compareTo(a.name!));
+          filterData.sort((a, b) => b.user.name.compareTo(a.user.name!));
         }
-      case 1:
-        if (ascending) {
-          filterData!.sort((a, b) => a.date!.compareTo(b.date!));
-        } else {
-          filterData!.sort((a, b) => b.date!.compareTo(a.date!));
-        }
-      case 2:
-        if (ascending) {
-          filterData!.sort((a, b) => a.email!.compareTo(b.email!));
-        } else {
-          filterData!.sort((a, b) => b.email!.compareTo(a.email!));
-        }
-      case 3:
-        if (ascending) {
-          filterData!.sort((a, b) => a.url!.compareTo(b.url!));
-        } else {
-          filterData!.sort((a, b) => b.url!.compareTo(a.url!));
-        }
-      case 4:
-        if (ascending) {
-          filterData!.sort((a, b) => a.watch!.compareTo(b.watch!));
-        } else {
-          filterData!.sort((a, b) => b.watch!.compareTo(a.watch!));
-        }
-      case 5:
-        if (ascending) {
-          filterData!.sort((a, b) => a.like!.compareTo(b.like!));
-        } else {
-          filterData!.sort((a, b) => b.like!.compareTo(a.like!));
-        }
+      // case 1:
+      //   if (ascending) {
+      //     filterData!.sort((a, b) => a.date!.compareTo(b.date!));
+      //   } else {
+      //     filterData!.sort((a, b) => b.date!.compareTo(a.date!));
+      //   }
+      // case 2:
+      //   if (ascending) {
+      //     filterData!.sort((a, b) => a.email!.compareTo(b.email!));
+      //   } else {
+      //     filterData!.sort((a, b) => b.email!.compareTo(a.email!));
+      //   }
+      // case 3:
+      //   if (ascending) {
+      //     filterData!.sort((a, b) => a.url!.compareTo(b.url!));
+      //   } else {
+      //     filterData!.sort((a, b) => b.url!.compareTo(a.url!));
+      //   }
+      // case 4:
+      //   if (ascending) {
+      //     filterData!.sort((a, b) => a.watch!.compareTo(b.watch!));
+      //   } else {
+      //     filterData!.sort((a, b) => b.watch!.compareTo(a.watch!));
+      //   }
+      // case 5:
+      //   if (ascending) {
+      //     filterData!.sort((a, b) => a.like!.compareTo(b.like!));
+      //   } else {
+      //     filterData!.sort((a, b) => b.like!.compareTo(a.like!));
+      //   }
+    
     }
   }
 
@@ -99,7 +101,7 @@ class _PostTableState extends State<PostTable> {
 
   @override
   void initState() {
-    filterData = rawData;
+    // filterData = rawData;
     super.initState();
   }
 
@@ -109,9 +111,8 @@ class _PostTableState extends State<PostTable> {
   Widget build(BuildContext context) {
     var searchPixnet = context.read<PixnetSearchProvider>();
 
-    var isInCart = context.select<PixnetSearchProvider, bool>(
-      // Here, we are only interested whether [item] is inside the cart.
-      (result) => result.posts!.isEmpty,
+    var isResultEmpty = context.select<PixnetSearchProvider, bool>(
+      (result) => result.posts.isEmpty,
     );
 
     return SizedBox(
@@ -139,17 +140,6 @@ class _PostTableState extends State<PostTable> {
           sortColumnIndex: sortIndex,
           columns: <DataColumn>[
             DataColumn(
-              label: const Text('創作者（首頁連結）'),
-              onSort: (columnIndex, ascending) {
-                setState(() {
-                  sort = !sortedColumn[columnIndex];
-                  sortedColumn[columnIndex] = sort;
-                  sortIndex = columnIndex;
-                });
-                onSortColum(columnIndex, ascending);
-              },
-            ),
-            DataColumn(
               label: const Text('發布日期'),
               onSort: (columnIndex, ascending) {
                 setState(() {
@@ -161,7 +151,7 @@ class _PostTableState extends State<PostTable> {
               },
             ),
             DataColumn(
-              label: const Text('Email'),
+              label: const Text('標題（文章連結）'),
               onSort: (columnIndex, ascending) {
                 setState(() {
                   sort = !sortedColumn[columnIndex];
@@ -172,7 +162,18 @@ class _PostTableState extends State<PostTable> {
               },
             ),
             DataColumn(
-              label: const Text('連結'),
+              label: const Text('創作者（首頁連結）'),
+              onSort: (columnIndex, ascending) {
+                setState(() {
+                  sort = !sortedColumn[columnIndex];
+                  sortedColumn[columnIndex] = sort;
+                  sortIndex = columnIndex;
+                });
+                onSortColum(columnIndex, ascending);
+              },
+            ),
+            DataColumn(
+              label: const Text('Email'),
               onSort: (columnIndex, ascending) {
                 setState(() {
                   sort = !sortedColumn[columnIndex];
@@ -206,7 +207,7 @@ class _PostTableState extends State<PostTable> {
           ],
           
           //Content
-          rows: searchPixnet.posts!.isEmpty? [
+          rows: isResultEmpty? [
             DataRow(cells: [
               DataCell(Text("-")),
               DataCell(Text("-")),
@@ -219,12 +220,22 @@ class _PostTableState extends State<PostTable> {
             searchPixnet.posts!.length, 
             (index) => DataRow(
               cells: [
-                DataCell(Text(searchPixnet.posts![index].user.name??"Name")),
-                DataCell(Text(DateFormat('yyyy/MM/dd/').format(searchPixnet.posts![index].publicAt))),
-                DataCell(Text(searchPixnet.posts![index].user.link.toString())),
-                DataCell(Text(searchPixnet.posts![index].link.toString())),
-                DataCell(Text(searchPixnet.posts![index].info.hit.toString())),
-                DataCell(Text(searchPixnet.posts![index].info.commentsCount.toString())),
+                DataCell(Text(DateFormat('yyyy/MM/dd').format(searchPixnet.posts[index].publicAt))),
+                DataCell(
+                  InkWell(
+                    onTap: () => launchUrl(Uri.parse(searchPixnet.posts[index].link.toString())),
+                    child: Text(searchPixnet.posts[index].title.toString(),),
+                  )
+                ),
+                DataCell(
+                  InkWell(
+                    onTap: () => launchUrl(Uri.parse(searchPixnet.posts[index].user.link.toString())),
+                    child: Text(searchPixnet.posts[index].user.displayName),
+                  )
+                ),
+                DataCell(Text(searchPixnet.posts[index].user.link.toString())),
+                DataCell(Text(searchPixnet.posts[index].info.hit.toString())),
+                DataCell(Text(searchPixnet.posts[index].info.commentsCount.toString())),
               ],
               onSelectChanged: (bool? value) {
               },
