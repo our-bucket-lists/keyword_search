@@ -1,6 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import 'package:keyword_project/modles/pixnet_posts_model.dart';
+import 'package:keyword_project/provider/pixnet_posts_provider.dart';
+import 'package:provider/provider.dart';
 
 class Data {
   Data({
@@ -88,6 +93,10 @@ class _PostTableState extends State<PostTable> {
     }
   }
 
+  onUpdateTable() {
+
+  }
+
   @override
   void initState() {
     filterData = rawData;
@@ -98,6 +107,13 @@ class _PostTableState extends State<PostTable> {
 
   @override
   Widget build(BuildContext context) {
+    var searchPixnet = context.read<PixnetSearchProvider>();
+
+    var isInCart = context.select<PixnetSearchProvider, bool>(
+      // Here, we are only interested whether [item] is inside the cart.
+      (result) => result.posts!.isEmpty,
+    );
+
     return SizedBox(
       width: double.infinity,
       child: SingleChildScrollView(
@@ -190,16 +206,25 @@ class _PostTableState extends State<PostTable> {
           ],
           
           //Content
-          rows: List<DataRow>.generate(
-            rawData.length, 
+          rows: searchPixnet.posts!.isEmpty? [
+            DataRow(cells: [
+              DataCell(Text("-")),
+              DataCell(Text("-")),
+              DataCell(Text("-")),
+              DataCell(Text("-")),
+              DataCell(Text("-")),
+              DataCell(Text("-")),
+            ])
+          ]: List<DataRow>.generate(
+            searchPixnet.posts!.length, 
             (index) => DataRow(
               cells: [
-                DataCell(Text(rawData[index].name??"Name")),
-                DataCell(Text(rawData[index].date.toString())),
-                DataCell(Text(rawData[index].email.toString())),
-                DataCell(Text(rawData[index].url.toString())),
-                DataCell(Text(rawData[index].watch.toString())),
-                DataCell(Text(rawData[index].like.toString())),
+                DataCell(Text(searchPixnet.posts![index].user.name??"Name")),
+                DataCell(Text(DateFormat('yyyy/MM/dd/').format(searchPixnet.posts![index].publicAt))),
+                DataCell(Text(searchPixnet.posts![index].user.link.toString())),
+                DataCell(Text(searchPixnet.posts![index].link.toString())),
+                DataCell(Text(searchPixnet.posts![index].info.hit.toString())),
+                DataCell(Text(searchPixnet.posts![index].info.commentsCount.toString())),
               ],
               onSelectChanged: (bool? value) {
               },
