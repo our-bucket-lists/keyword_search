@@ -1,0 +1,1 @@
+enum Platforms { pixnet, youtube, instagram }
