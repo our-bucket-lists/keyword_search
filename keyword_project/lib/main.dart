@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:keyword_project/provider/result_table_provider.dart';
 import 'package:keyword_project/provider/pixnet_provider.dart';
+import 'package:keyword_project/provider/ig_provider.dart';
 import 'package:keyword_project/screens/home_screen.dart';
 import 'package:keyword_project/common/theme.dart';
 
@@ -18,7 +20,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (context) => ResultTableProvider()),
         ChangeNotifierProvider(create: (context) => PixnetSearchProvider()),
+        ChangeNotifierProvider(create: (context) => InstagramSearchProvider()),
       ],
       child: MaterialApp(
         title: 'KEYWORD SEARCHING',

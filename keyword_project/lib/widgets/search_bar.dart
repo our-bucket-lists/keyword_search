@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:keyword_project/provider/pixnet_provider.dart';
+import 'package:keyword_project/provider/ig_provider.dart';
 import 'package:keyword_project/widgets/filter.dart';
 
 class PostSearchBar extends StatefulWidget {
@@ -31,11 +32,12 @@ class _PostSearchBarState extends State<PostSearchBar> {
           onSubmitted: (value) {
             log('Submit the value: $value');
 
-            // var searchPixnet = context.read<PixnetSearchProvider>();
             var searchPixnet = context.read<PixnetSearchProvider>();
+            var searchInstagram = context.read<InstagramSearchProvider>();
 
-            searchPixnet.input = value;
+            searchPixnet.input = searchInstagram.input = value;
             searchPixnet.search();
+            searchInstagram.search();
           },
         );
       }, 

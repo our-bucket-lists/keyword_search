@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 
 import 'package:keyword_project/widgets/export_dialog.dart';
@@ -41,7 +42,7 @@ class _BasicFilterChipState extends State<BasicFilterChip> {
   }
 }
 
-enum Sizes { youtube, instegram, pixnet }
+enum Platforms { pixnet, youtube, instagram }
 
 class PlatformOptions extends StatefulWidget{
   const PlatformOptions({super.key});
@@ -52,23 +53,24 @@ class PlatformOptions extends StatefulWidget{
 }
 
 class _PlatformOptionsState extends State<PlatformOptions> {
-  Set<Sizes> selection = <Sizes>{Sizes.youtube};
+  Set<Platforms> selection = <Platforms>{Platforms.pixnet};
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: SegmentedButton<Sizes>(
-        segments: const <ButtonSegment<Sizes>>[
-          ButtonSegment<Sizes>(value: Sizes.youtube, label: Text('YouTube')),
-          ButtonSegment<Sizes>(value: Sizes.instegram, label: Text('Instegram')),
-          ButtonSegment<Sizes>(value: Sizes.pixnet, label: Text('Pixnet')),
+      child: SegmentedButton<Platforms>(
+        segments: const <ButtonSegment<Platforms>>[
+          ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
+          ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
+          ButtonSegment<Platforms>(value: Platforms.youtube, label: Text('YouTube')),
         ],
         selected: selection,
-        onSelectionChanged: (Set<Sizes> newSelection) {
+        onSelectionChanged: (Set<Platforms> newSelection) {
           setState(() {
             selection = newSelection;
           });
+          log(selection.toString());
         },
         multiSelectionEnabled: true,
         showSelectedIcon: false,

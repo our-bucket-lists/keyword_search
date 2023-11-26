@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 
 import 'package:keyword_project/modles/pixnet_search_model.dart';
 import 'package:keyword_project/provider/pixnet_provider.dart';
-import 'package:provider/provider.dart';
 
 class PixnetResultTable extends StatefulWidget {
   const PixnetResultTable({Key? key}) : super(key: key);
