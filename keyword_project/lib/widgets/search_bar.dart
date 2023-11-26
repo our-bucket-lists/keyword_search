@@ -1,8 +1,9 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
-
-import 'package:keyword_project/widgets/filter.dart';
-import 'package:keyword_project/provider/pixnet_posts_provider.dart';
 import 'package:provider/provider.dart';
+
+import 'package:keyword_project/provider/pixnet_provider.dart';
+import 'package:keyword_project/widgets/filter.dart';
 
 class PostSearchBar extends StatefulWidget {
   const PostSearchBar({super.key});
@@ -28,8 +29,9 @@ class _PostSearchBarState extends State<PostSearchBar> {
           onTap: () {},
           onChanged: (_) {},
           onSubmitted: (value) {
-            print('Submit the value: $value');
+            log('Submit the value: $value');
 
+            // var searchPixnet = context.read<PixnetSearchProvider>();
             var searchPixnet = context.read<PixnetSearchProvider>();
 
             searchPixnet.input = value;

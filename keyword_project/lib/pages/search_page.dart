@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:keyword_project/widgets/search_bar.dart';
-import 'package:keyword_project/widgets/post_table.dart';
+import 'package:keyword_project/widgets/pixnet_result_table.dart';
 import 'package:keyword_project/widgets/filter.dart';
 
 
@@ -64,7 +64,7 @@ class _SearchPageState extends State<SearchPage> {
               ),
               child: const Padding(
                 padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
-                child: PostTable(),
+                child: PixnetResultTable(),
               ),
             )
           ),

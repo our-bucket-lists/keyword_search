@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:keyword_project/provider/pixnet_posts_provider.dart';
+import 'package:keyword_project/provider/pixnet_provider.dart';
 import 'package:keyword_project/screens/home_screen.dart';
 import 'package:keyword_project/common/theme.dart';
 
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'KEYWORD SEARCHING',
         theme: myDarkTheme,
-        home: HomeScreen()
+        home: const HomeScreen()
       ),
     );
   }
