@@ -33,18 +33,5 @@ class ResultTableProvider extends ChangeNotifier {
         log('Display the Default Result Table, which is Pixnet Result Table.');
         return const PixnetResultTable();
     }
-
-    if (_selectedPlatform == <Platforms>{Platforms.pixnet}) {
-      log('Displat Pixnet Result Table.');
-      notifyListeners();
-      return const PixnetResultTable();
-    }
-    else if (_selectedPlatform == <Platforms>{Platforms.instagram}) {
-      log('Displat Instagram Result Table.');
-      return const InstagramResultTable();
-    }
-    else {
-      return const PixnetResultTable();
-    }
   }
 }

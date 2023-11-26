@@ -1,7 +1,6 @@
-import 'dart:developer';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:flutter/material.dart';
 import 'package:keyword_project/provider/result_table_provider.dart';
 
 

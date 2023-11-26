@@ -3,9 +3,7 @@ import 'package:keyword_project/provider/result_table_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:keyword_project/widgets/search_bar.dart';
-import 'package:keyword_project/widgets/pixnet_result_table.dart';
 import 'package:keyword_project/widgets/result_table_switcher.dart';
-import 'package:provider/provider.dart';
 
 
 
