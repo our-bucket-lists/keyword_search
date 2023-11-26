@@ -1,5 +1,8 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'package:keyword_project/provider/pixnet_provider.dart';
 import 'package:keyword_project/widgets/filter.dart';
 
 class PostSearchBar extends StatefulWidget {
@@ -23,11 +26,16 @@ class _PostSearchBarState extends State<PostSearchBar> {
           trailing: <Widget>[
             IconButton(onPressed: (){}, icon: const Icon(Icons.tune)),
           ],
-          onTap: () {
-            controller.openView();
-          },
-          onChanged: (_) {
-            controller.openView();
+          onTap: () {},
+          onChanged: (_) {},
+          onSubmitted: (value) {
+            log('Submit the value: $value');
+
+            // var searchPixnet = context.read<PixnetSearchProvider>();
+            var searchPixnet = context.read<PixnetSearchProvider>();
+
+            searchPixnet.input = value;
+            searchPixnet.search();
           },
         );
       }, 
