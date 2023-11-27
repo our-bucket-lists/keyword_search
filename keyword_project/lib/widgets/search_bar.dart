@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:keyword_project/provider/pixnet_provider.dart';
 import 'package:keyword_project/provider/ig_provider.dart';
+import 'package:keyword_project/provider/youtube_provider.dart';
 import 'package:keyword_project/widgets/filter.dart';
 
 class PostSearchBar extends StatefulWidget {
@@ -34,10 +35,12 @@ class _PostSearchBarState extends State<PostSearchBar> {
 
             var searchPixnet = context.read<PixnetSearchProvider>();
             var searchInstagram = context.read<InstagramSearchProvider>();
+            var searchYoutube = context.read<YoutubeSearchProvider>();
 
-            searchPixnet.input = searchInstagram.input = value;
+            searchPixnet.input = searchInstagram.input = searchYoutube.input = value;
             searchPixnet.search();
             searchInstagram.search();
+            searchYoutube.search();
           },
         );
       }, 

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:keyword_project/provider/result_table_provider.dart';
 import 'package:keyword_project/provider/pixnet_provider.dart';
 import 'package:keyword_project/provider/ig_provider.dart';
+import 'package:keyword_project/provider/youtube_provider.dart';
 import 'package:keyword_project/screens/home_screen.dart';
 import 'package:keyword_project/common/theme.dart';
 
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => ResultTableProvider()),
         ChangeNotifierProvider(create: (context) => PixnetSearchProvider()),
         ChangeNotifierProvider(create: (context) => InstagramSearchProvider()),
+        ChangeNotifierProvider(create: (context) => YoutubeSearchProvider()),
       ],
       child: MaterialApp(
         title: 'KEYWORD SEARCHING',
