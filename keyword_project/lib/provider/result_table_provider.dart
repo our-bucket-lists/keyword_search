@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:keyword_project/widgets/ig_result_table.dart';
 import 'package:keyword_project/widgets/pixnet_result_table.dart';
+import 'package:keyword_project/widgets/youtube_result_table.dart';
 
 enum Platforms { pixnet, youtube, instagram }
 
@@ -27,8 +28,11 @@ class ResultTableProvider extends ChangeNotifier {
         log('Display the Pixnet Result Table.');
         return const PixnetResultTable();
       case Platforms.instagram:
-        log('Display the Pixnet Result Table.');
+        log('Display the Instagram Result Table.');
         return const InstagramResultTable();
+      case Platforms.youtube:
+        log('Display the YouTube Result Table.');
+        return const YoutubeResultTable();
       default:
         log('Display the Default Result Table, which is Pixnet Result Table.');
         return const PixnetResultTable();
