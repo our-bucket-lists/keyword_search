@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:keyword_project/common/global.dart';
 
 import 'package:keyword_project/modles/pixnet_search_model.dart';
 
@@ -46,6 +47,17 @@ class PixnetSearchProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         log(response.body.toString());
         searchResults = pixnetSearchFromJson(response.body);
+        var tmp;
+        for (var element in searchResults.data.results) {
+          tmp = await getMorePixnetInfo(
+            Uri.https(
+              'www.pixnet.net',
+              '/pcard/${element.memberUniqid.toString()}/profile/info',
+            )
+          );
+          element.email = tmp['email'];
+          element.ig = tmp['ig'];
+        }
       } else {
         error = response.statusCode.toString();
       }

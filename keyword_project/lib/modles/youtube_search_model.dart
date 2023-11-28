@@ -54,13 +54,22 @@ class Item {
 
 class Id {
     String videoId;
+    String videoViewCount;
+    String videoLikeCount;
+    String videoCommentCount;
 
     Id({
-        required this.videoId,
+        required this.videoId, 
+        required this.videoViewCount, 
+        required this.videoLikeCount, 
+        required this.videoCommentCount,
     });
 
     factory Id.fromJson(Map<String, dynamic> json) => Id(
         videoId: json["videoId"],
+        videoViewCount: '',
+        videoLikeCount: '',
+        videoCommentCount: '',
     );
 
     Map<String, dynamic> toJson() => {
@@ -76,6 +85,8 @@ class Snippet {
     String channelTitle;
     DateTime publishTime;
     String email;
+    String ig;
+    String followerCount;
 
     Snippet({
         required this.publishedAt,
@@ -85,6 +96,8 @@ class Snippet {
         required this.channelTitle,
         required this.publishTime,
         required this.email,
+        required this.ig,
+        required this.followerCount,
     });
 
     factory Snippet.fromJson(Map<String, dynamic> json) => Snippet(
@@ -94,7 +107,9 @@ class Snippet {
         description: json["description"],
         channelTitle: json["channelTitle"],
         publishTime: DateTime.parse(json["publishTime"]),
-        email: 'user@email.com',
+        email: '',
+        ig: '',
+        followerCount: '',
     );
 
     Map<String, dynamic> toJson() => {

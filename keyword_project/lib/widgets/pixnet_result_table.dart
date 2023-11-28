@@ -48,11 +48,17 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
         }
       case 4:
         if (ascending) {
+          filterData!.sort((a, b) => a.ig.compareTo(b.ig));
+        } else {
+          filterData!.sort((a, b) => b.ig.compareTo(a.ig));
+        }
+      case 5:
+        if (ascending) {
           filterData!.sort((a, b) => a.hit.compareTo(b.hit));
         } else {
           filterData!.sort((a, b) => b.hit.compareTo(a.hit));
         }
-      case 5:
+      case 6:
         if (ascending) {
           filterData!.sort((a, b) => a.replyCount.compareTo(b.replyCount));
         } else {
@@ -110,6 +116,14 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
               onTap: () => launchUrl(Uri.parse('https://www.pixnet.net/pcard/${search.results[index].memberUniqid.toString()}')),
             ),
             DataCell(Text(search.results[index].email.toString())),
+            DataCell(
+              Text(search.results[index].ig.toString()),
+              onTap: () {
+                if (search.results[index].ig.toString().isNotEmpty) {
+                  launchUrl(Uri.https('www.instagram.com','/${search.results[index].ig}'));
+                }
+              }
+            ),
             DataCell(Text(search.results[index].hit.toString())),
             DataCell(Text(search.results[index].replyCount.toString())),
           ],
@@ -168,6 +182,16 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
               ),
               DataColumn(
                 label: const Text('Email', style: TextStyle(fontWeight: FontWeight.bold),),
+                onSort: (columnIndex, ascending) {
+                  setState(() {
+                    sortIndex = columnIndex;
+                    sortedColumn[columnIndex] = ascending;
+                  });
+                  onSortColum(columnIndex, ascending);
+                },
+              ),
+              DataColumn(
+                label: const Text('Instagram', style: TextStyle(fontWeight: FontWeight.bold),),
                 onSort: (columnIndex, ascending) {
                   setState(() {
                     sortIndex = columnIndex;

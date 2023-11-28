@@ -36,22 +36,40 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
         }
       case 2:
         if (ascending) {
+          filterData!.sort((a, b) => a.id.videoViewCount.compareTo(b.id.videoViewCount));
+        } else {
+          filterData!.sort((a, b) => b.id.videoViewCount.compareTo(a.id.videoViewCount));
+        }
+      case 3:
+        if (ascending) {
+          filterData!.sort((a, b) => a.id.videoLikeCount.compareTo(b.id.videoLikeCount));
+        } else {
+          filterData!.sort((a, b) => b.id.videoLikeCount.compareTo(a.id.videoLikeCount));
+        }
+      case 4:
+        if (ascending) {
+          filterData!.sort((a, b) => a.id.videoCommentCount.compareTo(b.id.videoCommentCount));
+        } else {
+          filterData!.sort((a, b) => b.id.videoCommentCount.compareTo(a.id.videoCommentCount));
+        }
+      case 5:
+        if (ascending) {
           filterData!.sort((a, b) => a.snippet.channelTitle.compareTo(b.snippet.channelTitle));
         } else {
           filterData!.sort((a, b) => b.snippet.channelTitle.compareTo(a.snippet.channelTitle));
         }
-      case 3:
+      case 6:
+        if (ascending) {
+          filterData!.sort((a, b) => a.snippet.followerCount.compareTo(b.snippet.followerCount));
+        } else {
+          filterData!.sort((a, b) => b.snippet.followerCount.compareTo(a.snippet.followerCount));
+        }
+      case 7:
         if (ascending) {
           filterData!.sort((a, b) => a.snippet.email.compareTo(b.snippet.email));
         } else {
           filterData!.sort((a, b) => b.snippet.email.compareTo(a.snippet.email));
         }
-      // case 4:
-      //   if (ascending) {
-      //     filterData!.sort((a, b) => a.hit.compareTo(b.hit));
-      //   } else {
-      //     filterData!.sort((a, b) => b.hit.compareTo(a.hit));
-      //   }
       // case 5:
       //   if (ascending) {
       //     filterData!.sort((a, b) => a.replyCount.compareTo(b.replyCount));
@@ -95,6 +113,9 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
               ),
               onTap: () => launchUrl(Uri.https('www.youtube.com','/watch', {'v': search.results[index].id.videoId.toString()})),
             ),
+            DataCell(Text(search.results[index].id.videoViewCount.toString())),
+            DataCell(Text(search.results[index].id.videoLikeCount.toString())),
+            DataCell(Text(search.results[index].id.videoCommentCount.toString())),
             DataCell(
               SizedBox(
                 width: 96,
@@ -108,8 +129,8 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
               ),
               onTap: () => launchUrl(Uri.https('www.youtube.com','channel/${search.results[index].snippet.channelId}')),
             ),
+            DataCell(Text(search.results[index].snippet.followerCount.toString())),
             DataCell(Text(search.results[index].snippet.email.toString())),
-            // DataCell(Text(search.results[index].hit.toString())),
             // DataCell(Text(search.results[index].replyCount.toString())),
           ],
           onSelectChanged: (bool? value) {
@@ -156,7 +177,47 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
                 },
               ),
               DataColumn(
-                label: const Text('創作者', style: TextStyle(fontWeight: FontWeight.bold),),
+                label: const Text('觀看數', style: TextStyle(fontWeight: FontWeight.bold),),
+                onSort: (columnIndex, ascending) {
+                  setState(() {
+                    sortIndex = columnIndex;
+                    sortedColumn[columnIndex] = ascending;
+                  });
+                  onSortColum(columnIndex, ascending);
+                },
+              ),
+              DataColumn(
+                label: const Text('喜歡數', style: TextStyle(fontWeight: FontWeight.bold),),
+                onSort: (columnIndex, ascending) {
+                  setState(() {
+                    sortIndex = columnIndex;
+                    sortedColumn[columnIndex] = ascending;
+                  });
+                  onSortColum(columnIndex, ascending);
+                },
+              ),
+              DataColumn(
+                label: const Text('留言數', style: TextStyle(fontWeight: FontWeight.bold),),
+                onSort: (columnIndex, ascending) {
+                  setState(() {
+                    sortIndex = columnIndex;
+                    sortedColumn[columnIndex] = ascending;
+                  });
+                  onSortColum(columnIndex, ascending);
+                },
+              ),
+              DataColumn(
+                label: const Text('頻道', style: TextStyle(fontWeight: FontWeight.bold),),
+                onSort: (columnIndex, ascending) {
+                  setState(() {
+                    sortIndex = columnIndex;
+                    sortedColumn[columnIndex] = ascending;
+                  });
+                  onSortColum(columnIndex, ascending);
+                },
+              ),
+              DataColumn(
+                label: const Text('訂閱數', style: TextStyle(fontWeight: FontWeight.bold),),
                 onSort: (columnIndex, ascending) {
                   setState(() {
                     sortIndex = columnIndex;
@@ -175,16 +236,6 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
                   onSortColum(columnIndex, ascending);
                 },
               ),
-              // DataColumn(
-              //   label: const Text('觀看數', style: TextStyle(fontWeight: FontWeight.bold),),
-              //   onSort: (columnIndex, ascending) {
-              //     setState(() {
-              //       sortIndex = columnIndex;
-              //       sortedColumn[columnIndex] = ascending;
-              //     });
-              //     onSortColum(columnIndex, ascending);
-              //   },
-              // ),
               // DataColumn(
               //   label: const Text('留言數', style: TextStyle(fontWeight: FontWeight.bold),),
               //   onSort: (columnIndex, ascending) {

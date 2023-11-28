@@ -78,6 +78,7 @@ class Data {
 
 class Feed {
     String email;
+    String ig;
     // String type;
     String memberUniqid;
     String displayName;
@@ -99,6 +100,7 @@ class Feed {
 
     Feed({
         required this.email,
+        required this.ig,
         // required this.type,
         required this.memberUniqid,
         required this.displayName,
@@ -120,7 +122,8 @@ class Feed {
     });
 
     factory Feed.fromJson(Map<String, dynamic> json) => Feed(
-        email: 'mock@email.com',
+        email: '',
+        ig: '',
         // type: json["type"],
         memberUniqid: json["member_uniqid"],
         displayName: json["display_name"],
