@@ -19,7 +19,9 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
   int currentPage = 0;
   int sortIndex = 0;
   List<bool> sortedColumn= [false, false, false, false, false, false];
+  List<bool> selected =  List<bool>.generate(25 , (int index) => false);
   
+
   onSortColum(int columnIndex, bool ascending) {
     switch (columnIndex) {
       case 0:
@@ -77,21 +79,21 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
     super.initState();
   }
 
-  TextEditingController controller = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     var searchPixnet = context.read<PixnetSearchProvider>();
-
     var getDataRow = context.select<PixnetSearchProvider, List<DataRow>>(
       (search) => List<DataRow>.generate(
         search.results.length, 
         (index) => DataRow(
           cells: [
-            DataCell(Text(DateFormat('yyyy/MM/dd').format(search.results[index].createdAt))),
             DataCell(
               SizedBox(
-                width: 544,
+                width: 80,
+                child: Text(DateFormat('yyyy/MM/dd').format(search.results[index].createdAt)))),
+            DataCell(
+              SizedBox(
+                width: 320,
                 child: Tooltip(
                   message: search.results[index].title.toString(),
                   child: Text(
@@ -104,7 +106,7 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
             ),
             DataCell(
               SizedBox(
-                width: 96,
+                width: 120,
                 child: Tooltip(
                   message: search.results[index].displayName,
                   child: Text(
@@ -115,19 +117,26 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
               ),
               onTap: () => launchUrl(Uri.parse('https://www.pixnet.net/pcard/${search.results[index].memberUniqid.toString()}')),
             ),
-            DataCell(Text(search.results[index].email.toString())),
+            DataCell(SizedBox(width: 188, child: Text(search.results[index].email.toString()))),
             DataCell(
-              Text(search.results[index].ig.toString()),
+              SizedBox(
+                width: 96,
+                child: Text(overflow: TextOverflow.ellipsis,search.results[index].ig.toString())),
               onTap: () {
                 if (search.results[index].ig.toString().isNotEmpty) {
                   launchUrl(Uri.https('www.instagram.com','/${search.results[index].ig}'));
                 }
               }
             ),
-            DataCell(Text(search.results[index].hit.toString())),
-            DataCell(Text(search.results[index].replyCount.toString())),
+            DataCell(SizedBox(width: 72, child: Text(overflow: TextOverflow.ellipsis,search.results[index].hit.toString()))),
+            DataCell(SizedBox(width:72, child: Text(overflow: TextOverflow.ellipsis,search.results[index].replyCount.toString()))),
           ],
+          selected: selected[index],
           onSelectChanged: (bool? value) {
+            print('Row #$value is selected');
+            setState(() {
+              selected[index] = value!;
+            });
           },
         )
       ),
@@ -223,7 +232,22 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
             ],
             
             //Content
-            rows: getDataRow,
+            rows: searchPixnet.results.isNotEmpty? 
+              getDataRow:
+              List<DataRow>.generate(
+              1, 
+              (index) => DataRow(
+                cells: [
+                  DataCell(SizedBox(width: 120, child: Container(),)),
+                  DataCell(SizedBox(width: 320, child: Container(),)),
+                  DataCell(SizedBox(width: 120, child: Container(),)),
+                  DataCell(SizedBox(width: 188, child: Container(),)),
+                  DataCell(SizedBox(width: 96, child: Container(),)),
+                  DataCell(SizedBox(width: 72, child: Container(),)),
+                  DataCell(SizedBox(width: 72, child: Container(),)),
+                ],
+              )
+            ),
           ),
         ),
       ),

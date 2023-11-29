@@ -99,10 +99,12 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
         search.results.length, 
         (index) => DataRow(
           cells: [
-            DataCell(Text(DateFormat('yyyy/MM/dd').format(search.results[index].snippet.publishTime))),
+            DataCell(SizedBox(
+              width: 80,
+              child: Text(DateFormat('yyyy/MM/dd').format(search.results[index].snippet.publishTime)))),
             DataCell(
               SizedBox(
-                width: 544,
+                width: 288,
                 child: Tooltip(
                   message: search.results[index].snippet.title.toString(),
                   child: Text(
@@ -113,12 +115,15 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
               ),
               onTap: () => launchUrl(Uri.https('www.youtube.com','/watch', {'v': search.results[index].id.videoId.toString()})),
             ),
-            DataCell(Text(search.results[index].id.videoViewCount.toString())),
-            DataCell(Text(search.results[index].id.videoLikeCount.toString())),
-            DataCell(Text(search.results[index].id.videoCommentCount.toString())),
+            DataCell(SizedBox(
+              width: 64,child: Text(overflow: TextOverflow.ellipsis,search.results[index].id.videoViewCount.toString()))),
+            DataCell(SizedBox(
+              width: 64,child: Text(overflow: TextOverflow.ellipsis,search.results[index].id.videoLikeCount.toString()))),
+            DataCell(SizedBox(
+              width: 64,child: Text(overflow: TextOverflow.ellipsis,search.results[index].id.videoCommentCount.toString()))),
             DataCell(
               SizedBox(
-                width: 96,
+                width: 112,
                 child: Tooltip(
                   message: search.results[index].snippet.channelTitle,
                   child: Text(
@@ -129,8 +134,10 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
               ),
               onTap: () => launchUrl(Uri.https('www.youtube.com','channel/${search.results[index].snippet.channelId}')),
             ),
-            DataCell(Text(search.results[index].snippet.followerCount.toString())),
-            DataCell(Text(search.results[index].snippet.email.toString())),
+            DataCell(SizedBox(
+              width: 64,child: Text(overflow: TextOverflow.ellipsis,search.results[index].snippet.followerCount.toString()))),
+            DataCell(SizedBox(
+              width: 160,child: Text(overflow: TextOverflow.ellipsis,search.results[index].snippet.email.toString()))),
             // DataCell(Text(search.results[index].replyCount.toString())),
           ],
           onSelectChanged: (bool? value) {
@@ -249,7 +256,23 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
             ],
             
             //Content
-            rows: getDataRow,
+            rows: searchYoutube.results.isNotEmpty?
+              getDataRow:
+              List<DataRow>.generate(
+              1, 
+              (index) => DataRow(
+                cells: [
+                  DataCell(SizedBox(width: 120, child: Container(),)),
+                  DataCell(SizedBox(width: 280, child: Container(),)),
+                  DataCell(SizedBox(width: 64, child: Container(),)),
+                  DataCell(SizedBox(width: 64, child: Container(),)),
+                  DataCell(SizedBox(width: 64, child: Container(),)),
+                  DataCell(SizedBox(width: 112, child: Container(),)),
+                  DataCell(SizedBox(width: 64, child: Container(),)),
+                  DataCell(SizedBox(width: 168, child: Container(),)),
+                ],
+              )
+            )
           ),
         ),
       ),
