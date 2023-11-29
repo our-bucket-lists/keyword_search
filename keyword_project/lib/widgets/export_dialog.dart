@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MyExportDialog extends StatefulWidget {
   const MyExportDialog({super.key});
@@ -44,11 +45,16 @@ class _MyExportDialogState extends State<MyExportDialog> {
       ),
       actions: <Widget>[
         TextButton(
-          onPressed: () => Navigator.pop(context, 'Cancel'),
+          onPressed: () {
+            Navigator.pop(context, 'Cancel');
+          },
           child: const Text('Cancel'),
         ),
         TextButton(
-          onPressed: () => Navigator.pop(context, 'OK'),
+          onPressed: () {
+            launchUrl(Uri.parse('https://docs.google.com/spreadsheets/d/1Ei7GkAdD0AYoC7YO3GduFMGwjzq49wGnFuPMXUSAlkA/export?format=csv&id=1Ei7GkAdD0AYoC7YO3GduFMGwjzq49wGnFuPMXUSAlkA&gid=0'));
+            Navigator.pop(context, 'OK');
+          }, 
           child: const Text('OK'),
         ),
       ],
