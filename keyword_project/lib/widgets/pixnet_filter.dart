@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:keyword_project/modles/pixnet_search_model.dart';
 import 'package:keyword_project/provider/pixnet_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -25,8 +24,8 @@ class _PixnetFilterState extends State<PixnetFilter> {
             decoration: InputDecoration(
               hintText: '標題包含',
               hintStyle: Theme.of(context).textTheme.labelMedium,
-              border: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(8))
+              border: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8))
               ),
             ),
             style: Theme.of(context).textTheme.bodyMedium,
@@ -48,8 +47,8 @@ class _PixnetFilterState extends State<PixnetFilter> {
             decoration: InputDecoration(
               hintText: '觀看數>=',
               hintStyle: Theme.of(context).textTheme.labelMedium,
-              border: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(8))
+              border: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8))
               ),
             ),
             style: Theme.of(context).textTheme.bodyMedium,
@@ -71,8 +70,8 @@ class _PixnetFilterState extends State<PixnetFilter> {
             decoration: InputDecoration(
               hintText: '留言數>=',
               hintStyle: Theme.of(context).textTheme.labelMedium,
-              border: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(8))
+              border: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8))
               ),
             ),
             style: Theme.of(context).textTheme.bodyMedium,
@@ -85,7 +84,6 @@ class _PixnetFilterState extends State<PixnetFilter> {
           ),
         ),
       ),
-    
     ]);
   }
 }

@@ -95,7 +95,7 @@ class _BasicFilterState extends State<BasicFilter> {
       children: [
         Row(
           children: [
-            PlatformOptions(),
+            const PlatformOptions(),
             SizedBox(
               height: 32,
               child: VerticalDivider(
@@ -104,16 +104,16 @@ class _BasicFilterState extends State<BasicFilter> {
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            BasicFilterChip(),  
+            const BasicFilterChip(),  
           ],
         ),
         FilledButton.icon(
           onPressed: () => showDialog<String>(
             context: context,
-            builder: (BuildContext context) => MyExportDialog()
+            builder: (BuildContext context) => const MyExportDialog()
           ),
           label: const Text('Show Dialog'),
-          icon: Icon(
+          icon: const Icon(
             Icons.file_download,
           ),
         )

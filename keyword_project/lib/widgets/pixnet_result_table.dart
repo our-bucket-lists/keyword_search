@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -133,7 +135,7 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
           ],
           selected: selected[index],
           onSelectChanged: (bool? value) {
-            print('Row #$value is selected');
+            log('Row #$value is selected');
             setState(() {
               selected[index] = value!;
             });

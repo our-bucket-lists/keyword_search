@@ -15,9 +15,9 @@ class TableSwitch extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: SegmentedButton<Platforms>(
         segments: const <ButtonSegment<Platforms>>[
-          ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
-          ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
           ButtonSegment<Platforms>(value: Platforms.youtube, label: Text('YouTube')),
+          ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
+          ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
         ],
         selected: resultTable.selectedPlatform,
         onSelectionChanged: (Set<Platforms> newSelection) {

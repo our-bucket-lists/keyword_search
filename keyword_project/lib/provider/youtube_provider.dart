@@ -62,7 +62,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
         log(response.body.toString());
         searchResults = youtubeSearchFromJson(response.body);
         
-        var tmp;
+        Map tmp;
         for (var element in searchResults.items) {
           tmp = await getYoutubeChannelInfo(element.snippet.channelId);
           element.snippet.email = tmp['email'];

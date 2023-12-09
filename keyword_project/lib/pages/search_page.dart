@@ -59,7 +59,7 @@ class _SearchPageState extends State<SearchPage> {
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
-                  TableSwitch(),
+                  const TableSwitch(),
                   SizedBox(
                     height: 32,
                     child: VerticalDivider(
@@ -68,7 +68,7 @@ class _SearchPageState extends State<SearchPage> {
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  Expanded(
+                  const Expanded(
                     child: PixnetFilter()
                   ),
                   Padding(
@@ -76,10 +76,10 @@ class _SearchPageState extends State<SearchPage> {
                     child: FilledButton.icon(
                       onPressed: () => showDialog<String>(
                         context: context,
-                        builder: (BuildContext context) => MyExportDialog()
+                        builder: (BuildContext context) => const MyExportDialog()
                       ),
                       label: const Text('Show Dialog'),
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.file_download,
                       ),
                     ),
@@ -96,7 +96,7 @@ class _SearchPageState extends State<SearchPage> {
                 borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16))
               ),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 8, 0, 16),
+                padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
                 child: context.watch<ResultTableProvider>().selectedTable,
               ),
             )
