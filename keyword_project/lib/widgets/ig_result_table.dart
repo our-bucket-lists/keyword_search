@@ -93,7 +93,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
 
     var getDataRow = context.select<InstagramSearchProvider, List<DataRow>>(
       (search) => isNoResult? [
-        DataRow(
+        const DataRow(
           cells: [
             DataCell(Text('-')),
             DataCell(Text('-')),

@@ -59,7 +59,7 @@ class PixnetSearchProvider extends ChangeNotifier {
         log(response.body.toString());
         searchResults = pixnetSearchFromJson(response.body);
         _currentResults =  List.from(searchResults.data.results);
-        var tmp;
+        Map tmp;
         for (var element in _currentResults) {
           tmp = await getMorePixnetInfo(
             Uri.https(
