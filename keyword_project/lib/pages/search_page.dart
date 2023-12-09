@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:keyword_project/provider/result_table_provider.dart';
+import 'package:keyword_project/widgets/pixnet_filter.dart';
+import 'package:keyword_project/widgets/export_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'package:keyword_project/widgets/search_bar.dart';
@@ -66,6 +68,22 @@ class _SearchPageState extends State<SearchPage> {
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
+                  Expanded(
+                    child: PixnetFilter()
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: FilledButton.icon(
+                      onPressed: () => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => MyExportDialog()
+                      ),
+                      label: const Text('Show Dialog'),
+                      icon: Icon(
+                        Icons.file_download,
+                      ),
+                    ),
+                  )
                 ],
               ),
             ),

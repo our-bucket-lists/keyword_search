@@ -107,26 +107,25 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
           search.results[0].layoutContent.fillItems.length,
           (index) => DataRow(
                 cells: [
-                  DataCell(Text(DateFormat('yyyy/MM/dd').format(search
-                      .results[0]
-                      .layoutContent
-                      .oneByTwoItem!
-                      .clips
-                      .items[index]
-                      .media
-                      .caption
-                      .createdAtUtc))),
+                  DataCell(SizedBox(
+                    width: 80,
+                    child: Text(DateFormat('yyyy/MM/dd').format(search
+                        .results[0]
+                        .layoutContent
+                        .fillItems[index]
+                        .media
+                        .caption
+                        .createdAtUtc)),
+                  )),
                   DataCell(
                     SizedBox(
-                      width: 544,
+                      width: 520,
                       child: Tooltip(
                         message: search.results[0].layoutContent.fillItems[index].media.caption.text
                             .toString(),
                         child: Text(
                           overflow: TextOverflow.ellipsis,
-                          search.results[0].layoutContent.oneByTwoItem!.clips
-                              .items[index].media.caption.text
-                              .toString().replaceAll("\n", " "),
+                          search.results[0].layoutContent.fillItems[index].media.caption.text.toString().replaceAll("\n", " "),
                         ),
                       ),
                     ),
@@ -135,53 +134,39 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                   ),
                   DataCell(
                     SizedBox(
-                        width: 96,
+                        width: 160,
                         child: Tooltip(
                           message: search.results[0].layoutContent.fillItems[index].media.caption.user.fullName,
                           child: Text(
                               overflow: TextOverflow.ellipsis,
-                              search
-                                  .results[0]
-                                  .layoutContent
-                                  .oneByTwoItem!
-                                  .clips
-                                  .items[index]
-                                  .media
-                                  .caption
-                                  .user
-                                  .fullName),
+                              search.results[0].layoutContent.fillItems[index].media.caption.user.fullName),
                         )),
                     onTap: () => launchUrl(Uri.https(site,
-                        '${search.results[0].layoutContent.fillItems[index].media.caption.user.username.toString()}')),
+                        search.results[0].layoutContent.fillItems[index].media.caption.user.username.toString())),
                   ),
                   DataCell(
                     SizedBox(
-                        width: 96,
+                        width: 88,
                         child: Tooltip(
                           message: search.results[0].layoutContent.fillItems[index].media.caption.user.username,
                           child: Text(
                               overflow: TextOverflow.ellipsis,
-                              search
-                                  .results[0]
-                                  .layoutContent
-                                  .oneByTwoItem!
-                                  .clips
-                                  .items[index]
-                                  .media
-                                  .caption
-                                  .user
-                                  .username),
+                              search.results[0].layoutContent.fillItems[index].media.caption.user.username,),
                         )),
                     onTap: () => launchUrl(Uri.https(
                         site,
-                        search.results[0].layoutContent.oneByTwoItem!.clips
-                            .items[index].media.caption.user.username
-                            .toString())),
+                        search.results[0].layoutContent.fillItems[index].media.caption.user.username.toString())),
                   ),
-                  DataCell(Text(search.results[0].layoutContent.fillItems[index].media.likeCount
-                      .toString())),
-                  DataCell(Text(search.results[0].layoutContent.fillItems[index].media.commentCount
-                      .toString())),
+                  DataCell(SizedBox(
+                    width: 80,
+                    child: Text(overflow: TextOverflow.ellipsis,search.results[0].layoutContent.fillItems[index].media.likeCount
+                        .toString()),
+                  )),
+                  DataCell(SizedBox(
+                    width: 80,
+                    child: Text(overflow: TextOverflow.ellipsis,search.results[0].layoutContent.fillItems[index].media.commentCount
+                        .toString()),
+                  )),
                 ],
                 onSelectChanged: (bool? value) {},
               )),
@@ -285,7 +270,21 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
             ],
 
             //Content
-            rows: isNoResult? []:getDataRow,
+            rows: isNoResult? 
+              List<DataRow>.generate(
+                1, 
+                (index) => DataRow(
+                  cells: [
+                    DataCell(SizedBox(width: 120, child: Container(),)),
+                    DataCell(SizedBox(width: 520, child: Container(),)),
+                    DataCell(SizedBox(width: 160, child: Container(),)),
+                    DataCell(SizedBox(width: 88, child: Container(),)),
+                    DataCell(SizedBox(width: 80, child: Container(),)),
+                    DataCell(SizedBox(width: 80, child: Container(),)),
+                  ],
+                )
+              ):
+              getDataRow,
           ),
         ),
       ),

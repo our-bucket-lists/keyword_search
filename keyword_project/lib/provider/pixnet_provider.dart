@@ -16,6 +16,7 @@ class PixnetSearchProvider extends ChangeNotifier {
       data:
           Data(results: [], page: 0, perPage: 0, totalPage: 0, totalFeeds: 0));
   String _searchText = '';
+  List<Feed> _currentResults = [];
 
   set input(String inputText) {
     _searchText = inputText;
@@ -26,7 +27,17 @@ class PixnetSearchProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Feed> get results => searchResults.data.results;
+  List<Feed> get originResults => searchResults.data.results;
+  List<Feed> get results => _currentResults;
+
+  set results(List<Feed> inputList) {
+    _currentResults = inputList;
+    log("Pixnet Current Result Changed: $_currentResults");
+    // Notify listeners, in case the new catalog provides information
+    // different from the previous one. For example, availability of an item
+    // might have changed.
+    notifyListeners();
+  }
 
   search() async {
     if (_searchText.isNotEmpty) {
@@ -47,8 +58,9 @@ class PixnetSearchProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         log(response.body.toString());
         searchResults = pixnetSearchFromJson(response.body);
+        _currentResults =  List.from(searchResults.data.results);
         var tmp;
-        for (var element in searchResults.data.results) {
+        for (var element in _currentResults) {
           tmp = await getMorePixnetInfo(
             Uri.https(
               'www.pixnet.net',
