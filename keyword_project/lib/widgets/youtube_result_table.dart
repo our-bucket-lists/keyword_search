@@ -18,7 +18,7 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
   int rowsPerPage = 10;
   int currentPage = 0;
   int sortIndex = 0;
-  List<bool> sortedColumn= [false, false, false, false, false, false];
+  List<bool> sortedColumn= [false, false, false, false, false, false, false, false];
   
   onSortColum(int columnIndex, bool ascending) {
     switch (columnIndex) {
@@ -36,21 +36,21 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
         }
       case 2:
         if (ascending) {
-          filterData!.sort((a, b) => a.id.videoViewCount.compareTo(b.id.videoViewCount));
+          filterData!.sort((a, b) => int.parse(a.id.videoViewCount).compareTo(int.parse(b.id.videoViewCount)));
         } else {
-          filterData!.sort((a, b) => b.id.videoViewCount.compareTo(a.id.videoViewCount));
+          filterData!.sort((a, b) => int.parse(b.id.videoViewCount).compareTo(int.parse(a.id.videoViewCount)));
         }
       case 3:
         if (ascending) {
-          filterData!.sort((a, b) => a.id.videoLikeCount.compareTo(b.id.videoLikeCount));
+          filterData!.sort((a, b) => int.parse(a.id.videoLikeCount).compareTo(int.parse(b.id.videoLikeCount)));
         } else {
-          filterData!.sort((a, b) => b.id.videoLikeCount.compareTo(a.id.videoLikeCount));
+          filterData!.sort((a, b) => int.parse(b.id.videoLikeCount).compareTo(int.parse(a.id.videoLikeCount)));
         }
       case 4:
         if (ascending) {
-          filterData!.sort((a, b) => a.id.videoCommentCount.compareTo(b.id.videoCommentCount));
+          filterData!.sort((a, b) => int.parse(a.id.videoCommentCount).compareTo(int.parse(b.id.videoCommentCount)));
         } else {
-          filterData!.sort((a, b) => b.id.videoCommentCount.compareTo(a.id.videoCommentCount));
+          filterData!.sort((a, b) => int.parse(b.id.videoCommentCount).compareTo(int.parse(a.id.videoCommentCount)));
         }
       case 5:
         if (ascending) {
@@ -60,9 +60,9 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
         }
       case 6:
         if (ascending) {
-          filterData!.sort((a, b) => a.snippet.followerCount.compareTo(b.snippet.followerCount));
+          filterData!.sort((a, b) => int.parse(a.snippet.followerCount).compareTo(int.parse(b.snippet.followerCount)));
         } else {
-          filterData!.sort((a, b) => b.snippet.followerCount.compareTo(a.snippet.followerCount));
+          filterData!.sort((a, b) => int.parse(b.snippet.followerCount).compareTo(int.parse(a.snippet.followerCount)));
         }
       case 7:
         if (ascending) {

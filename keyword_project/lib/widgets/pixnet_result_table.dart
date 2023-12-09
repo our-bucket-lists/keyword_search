@@ -18,7 +18,7 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
   int rowsPerPage = 10;
   int currentPage = 0;
   int sortIndex = 0;
-  List<bool> sortedColumn= [false, false, false, false, false, false];
+  List<bool> sortedColumn= [false, false, false, false, false, false, false];
   List<bool> selected =  List<bool>.generate(25 , (int index) => false);
   
 

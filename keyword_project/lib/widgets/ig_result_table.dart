@@ -112,9 +112,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                     child: Text(DateFormat('yyyy/MM/dd').format(search
                         .results[0]
                         .layoutContent
-                        .oneByTwoItem!
-                        .clips
-                        .items[index]
+                        .fillItems[index]
                         .media
                         .caption
                         .createdAtUtc)),
@@ -127,9 +125,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                             .toString(),
                         child: Text(
                           overflow: TextOverflow.ellipsis,
-                          search.results[0].layoutContent.oneByTwoItem!.clips
-                              .items[index].media.caption.text
-                              .toString().replaceAll("\n", " "),
+                          search.results[0].layoutContent.fillItems[index].media.caption.text.toString().replaceAll("\n", " "),
                         ),
                       ),
                     ),
@@ -143,19 +139,10 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                           message: search.results[0].layoutContent.fillItems[index].media.caption.user.fullName,
                           child: Text(
                               overflow: TextOverflow.ellipsis,
-                              search
-                                  .results[0]
-                                  .layoutContent
-                                  .oneByTwoItem!
-                                  .clips
-                                  .items[index]
-                                  .media
-                                  .caption
-                                  .user
-                                  .fullName),
+                              search.results[0].layoutContent.fillItems[index].media.caption.user.fullName),
                         )),
                     onTap: () => launchUrl(Uri.https(site,
-                        '${search.results[0].layoutContent.fillItems[index].media.caption.user.username.toString()}')),
+                        search.results[0].layoutContent.fillItems[index].media.caption.user.username.toString())),
                   ),
                   DataCell(
                     SizedBox(
@@ -164,22 +151,11 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                           message: search.results[0].layoutContent.fillItems[index].media.caption.user.username,
                           child: Text(
                               overflow: TextOverflow.ellipsis,
-                              search
-                                  .results[0]
-                                  .layoutContent
-                                  .oneByTwoItem!
-                                  .clips
-                                  .items[index]
-                                  .media
-                                  .caption
-                                  .user
-                                  .username),
+                              search.results[0].layoutContent.fillItems[index].media.caption.user.username,),
                         )),
                     onTap: () => launchUrl(Uri.https(
                         site,
-                        search.results[0].layoutContent.oneByTwoItem!.clips
-                            .items[index].media.caption.user.username
-                            .toString())),
+                        search.results[0].layoutContent.fillItems[index].media.caption.user.username.toString())),
                   ),
                   DataCell(SizedBox(
                     width: 80,

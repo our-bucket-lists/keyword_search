@@ -46,7 +46,7 @@ class _PixnetFilterState extends State<PixnetFilter> {
           height: 40,
           child: TextField(
             decoration: InputDecoration(
-              hintText: '觀看數>',
+              hintText: '觀看數>=',
               hintStyle: Theme.of(context).textTheme.labelMedium,
               border: OutlineInputBorder(
                 borderRadius: const BorderRadius.all(Radius.circular(8))
@@ -69,7 +69,7 @@ class _PixnetFilterState extends State<PixnetFilter> {
           height: 40,
           child: TextField(
             decoration: InputDecoration(
-              hintText: '留言數>',
+              hintText: '留言數>=',
               hintStyle: Theme.of(context).textTheme.labelMedium,
               border: OutlineInputBorder(
                 borderRadius: const BorderRadius.all(Radius.circular(8))
