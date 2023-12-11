@@ -40,25 +40,27 @@ class _PostSearchBarState extends State<PostSearchBar> {
 
             log('Search Keyword: $value');
             searchPixnet.input = searchInstagram.input = searchYoutube.input = value;
-            try {
-              searchPixnet.search();
-            } catch (_) {
-              rethrow;
-            } finally {
-              try {
-                searchInstagram.search();
-              } catch (_) {
-                rethrow;
-              } finally {
-                try {
-                  searchYoutube.search();
-                } catch (_) {
-                  rethrow;
-                } finally {
-                  resultTable.isLoading = false;
-                }
-              }
-            }
+            await searchYoutube.search();
+            resultTable.isLoading = false;
+            // try {
+            //   searchPixnet.search();
+            // } catch (_) {
+            //   rethrow;
+            // } finally {
+            //   try {
+            //     searchInstagram.search();
+            //   } catch (_) {
+            //     rethrow;
+            //   } finally {
+            //     try {
+            //       searchYoutube.search();
+            //     } catch (_) {
+            //       rethrow;
+            //     } finally {
+            //       resultTable.isLoading = false;
+            //     }
+            //   }
+            // }
           },
         );
       }, 

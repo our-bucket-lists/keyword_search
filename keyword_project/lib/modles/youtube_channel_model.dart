@@ -2,7 +2,7 @@
 //
 //     final youtubeChannel = youtubeChannelFromJson(jsonString);
 
-import 'dart:convert';
+import "dart:convert";
 
 YoutubeChannel youtubeChannelFromJson(String str) => YoutubeChannel.fromJson(json.decode(str));
 
@@ -25,7 +25,7 @@ class YoutubeChannel {
         // kind: json["kind"],
         // etag: json["etag"],
         // pageInfo: PageInfo.fromJson(json["pageInfo"]),
-        items: List<Item>.from(json["items"].map((x) => Item.fromJson(x))),
+        items: json.containsKey("items")?List<Item>.from(json["items"].map((x) => Item.fromJson(x))):[],
     );
 
     Map<String, dynamic> toJson() => {
@@ -55,8 +55,8 @@ class Item {
         // kind: json["kind"],
         // etag: json["etag"],
         // id: json["id"],
-        snippet: Snippet.fromJson(json["snippet"]),
-        statistics: Statistics.fromJson(json["statistics"]),
+        snippet: json.containsKey("snippet")?Snippet.fromJson(json["snippet"]):Snippet(title: "", description: "", customUrl: ""),
+        statistics: json.containsKey("statistics")?Statistics.fromJson(json["statistics"]):Statistics(viewCount: "0", subscriberCount: "0"),
     );
 
     Map<String, dynamic> toJson() => {
@@ -90,9 +90,9 @@ class Snippet {
     });
 
     factory Snippet.fromJson(Map<String, dynamic> json) => Snippet(
-        title: json["title"],
-        description: json["description"],
-        customUrl: json["customUrl"],
+        title: json.containsKey("title")?json["title"]:"",
+        description: json.containsKey("description")?json["description"]:"",
+        customUrl: json.containsKey("customUrl")?json["customUrl"]:"",
         // publishedAt: DateTime.parse(json["publishedAt"]),
         // thumbnails: Thumbnails.fromJson(json["thumbnails"]),
         // defaultLanguage: json["defaultLanguage"],
@@ -112,118 +112,120 @@ class Snippet {
     };
 }
 
-class Localized {
-    String title;
-    String description;
-
-    Localized({
-        required this.title,
-        required this.description,
-    });
-
-    factory Localized.fromJson(Map<String, dynamic> json) => Localized(
-        title: json["title"],
-        description: json["description"],
-    );
-
-    Map<String, dynamic> toJson() => {
-        "title": title,
-        "description": description,
-    };
-}
-
-class Thumbnails {
-    Default thumbnailsDefault;
-    Default medium;
-    Default high;
-
-    Thumbnails({
-        required this.thumbnailsDefault,
-        required this.medium,
-        required this.high,
-    });
-
-    factory Thumbnails.fromJson(Map<String, dynamic> json) => Thumbnails(
-        thumbnailsDefault: Default.fromJson(json["default"]),
-        medium: Default.fromJson(json["medium"]),
-        high: Default.fromJson(json["high"]),
-    );
-
-    Map<String, dynamic> toJson() => {
-        "default": thumbnailsDefault.toJson(),
-        "medium": medium.toJson(),
-        "high": high.toJson(),
-    };
-}
-
-class Default {
-    String url;
-    int width;
-    int height;
-
-    Default({
-        required this.url,
-        required this.width,
-        required this.height,
-    });
-
-    factory Default.fromJson(Map<String, dynamic> json) => Default(
-        url: json["url"],
-        width: json["width"],
-        height: json["height"],
-    );
-
-    Map<String, dynamic> toJson() => {
-        "url": url,
-        "width": width,
-        "height": height,
-    };
-}
 
 class Statistics {
     String viewCount;
     String subscriberCount;
-    bool hiddenSubscriberCount;
-    String videoCount;
+    // bool hiddenSubscriberCount;
+    // String videoCount;
 
     Statistics({
         required this.viewCount,
         required this.subscriberCount,
-        required this.hiddenSubscriberCount,
-        required this.videoCount,
+        // required this.hiddenSubscriberCount,
+        // required this.videoCount,
     });
 
     factory Statistics.fromJson(Map<String, dynamic> json) => Statistics(
-        viewCount: json["viewCount"],
-        subscriberCount: json["subscriberCount"],
-        hiddenSubscriberCount: json["hiddenSubscriberCount"],
-        videoCount: json["videoCount"],
+        viewCount: json.containsKey("viewCount")?json["viewCount"]:"0",
+        subscriberCount: json.containsKey("subscriberCount")?json["subscriberCount"]:"0",
+        // hiddenSubscriberCount: json.containsKey("hiddenSubscriberCount")?json["hiddenSubscriberCount"],
+        // videoCount: json.containsKey("videoCount")?json["videoCount"],
     );
 
     Map<String, dynamic> toJson() => {
         "viewCount": viewCount,
         "subscriberCount": subscriberCount,
-        "hiddenSubscriberCount": hiddenSubscriberCount,
-        "videoCount": videoCount,
+        // "hiddenSubscriberCount": hiddenSubscriberCount,
+        // "videoCount": videoCount,
     };
 }
 
-class PageInfo {
-    int totalResults;
-    int resultsPerPage;
+// class PageInfo {
+//     int totalResults;
+//     int resultsPerPage;
 
-    PageInfo({
-        required this.totalResults,
-        required this.resultsPerPage,
-    });
+//     PageInfo({
+//         required this.totalResults,
+//         required this.resultsPerPage,
+//     });
 
-    factory PageInfo.fromJson(Map<String, dynamic> json) => PageInfo(
-        totalResults: json["totalResults"],
-        resultsPerPage: json["resultsPerPage"],
-    );
+//     factory PageInfo.fromJson(Map<String, dynamic> json) => PageInfo(
+//         totalResults: json.containsKey("")?json["totalResults"]:0,
+//         resultsPerPage: json.containsKey("resultsPerPage")?json["resultsPerPage"]:0,
+//     );
 
-    Map<String, dynamic> toJson() => {
-        "totalResults": totalResults,
-        "resultsPerPage": resultsPerPage,
-    };
-}
+//     Map<String, dynamic> toJson() => {
+//         "totalResults": totalResults,
+//         "resultsPerPage": resultsPerPage,
+//     };
+// }
+
+// class Localized {
+//     String title;
+//     String description;
+
+//     Localized({
+//         required this.title,
+//         required this.description,
+//     });
+
+//     factory Localized.fromJson(Map<String, dynamic> json) => Localized(
+//         title: json.containsKey("")?json["title"],
+//         description: json.containsKey("")?json["description"],
+//     );
+
+//     Map<String, dynamic> toJson() => {
+//         "title": title,
+//         "description": description,
+//     };
+// }
+
+// class Thumbnails {
+//     Default thumbnailsDefault;
+//     Default medium;
+//     Default high;
+
+//     Thumbnails({
+//         required this.thumbnailsDefault,
+//         required this.medium,
+//         required this.high,
+//     });
+
+//     factory Thumbnails.fromJson(Map<String, dynamic> json) => Thumbnails(
+//         thumbnailsDefault: Default.fromJson(json.containsKey("")?json["default"]),
+//         medium: Default.fromJson(json.containsKey("")?json["medium"]),
+//         high: Default.fromJson(json.containsKey("")?json["high"]),
+//     );
+
+//     Map<String, dynamic> toJson() => {
+//         "default": thumbnailsDefault.toJson(),
+//         "medium": medium.toJson(),
+//         "high": high.toJson(),
+//     };
+// }
+
+// class Default {
+//     String url;
+//     int width;
+//     int height;
+
+//     Default({
+//         required this.url,
+//         required this.width,
+//         required this.height,
+//     });
+
+//     factory Default.fromJson(Map<String, dynamic> json) => Default(
+//         url: json.containsKey("")?json["url"],
+//         width: json.containsKey("")?json["width"],
+//         height: json.containsKey("")?json["height"],
+//     );
+
+//     Map<String, dynamic> toJson() => {
+//         "url": url,
+//         "width": width,
+//         "height": height,
+//     };
+// }
+

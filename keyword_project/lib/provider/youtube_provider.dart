@@ -9,10 +9,10 @@ import 'package:keyword_project/modles/youtube_video_model.dart' as video;
 
 class YoutubeSearchProvider extends ChangeNotifier {
   static const apiEndpoint = 'youtube.googleapis.com';
-  final String _youtubeApiKey = 'AIzaSyDl6f1JPAAE59rp_ts7Al_fX7vMG7-_4Sk';
+  final String _youtubeApiKey = 'AIzaSyDEnd1p2BskDTOYUfldRuHMTI5LeSKGEBI';
   bool isLoading = true;
   String error = '';
-  YoutubeSearch searchResults = YoutubeSearch(
+  YoutubeSearch _searchResults = YoutubeSearch(
     nextPageToken: '', 
     pageInfo: PageInfo(totalResults: 0, resultsPerPage: 0), 
     items: []
@@ -21,16 +21,45 @@ class YoutubeSearchProvider extends ChangeNotifier {
   video.YoutubeVideo videoResponse = video.YoutubeVideo(items: []);
   String _searchText = '';
   List<Item> _currentResults = [];
+  List<Item> _originData = [];
+  List<Item> _displayedData = [];
+  String _nextPageToken = '';
+  int _maxPage = 0;
+  int _currentPage = 0;
+  int _resultsPerPage = 50;
+  List<bool> sortedColumn = List.generate(8, (index) => false);
 
   set input(String inputText) {
     _searchText = inputText;
-    // Notify listeners, in case the new catalog provides information
-    // different from the previous one. For example, availability of an item
-    // might have changed.
-    notifyListeners();
+    _displayedData = [];
+    _nextPageToken = '';
+    _maxPage = 0;
+    _currentPage = 0;
   }
 
-  List<Item> get results => searchResults.items;
+  List<Item> get results => _displayedData;
+
+  onLoadMore() async {
+    if (_currentPage < _maxPage) {
+      isLoading = true;
+      notifyListeners();
+
+      log('Loading more is started on YouTube...');
+      _currentPage += 1;
+      await getSearchResultApi();
+      log('Loading more is completed on YouTube!');
+      log('Current Page = $_currentPage');
+
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  getOriginOder() {
+    _displayedData = List.from(_originData);
+    sortedColumn = List.generate(8, (index) => false);
+    notifyListeners();
+  }
 
   search() async {
     if (_searchText.isNotEmpty) {
@@ -38,32 +67,40 @@ class YoutubeSearchProvider extends ChangeNotifier {
       notifyListeners();
 
       log('Searching Started on YouTube...');
-      await getSearchResultApi(keyword: _searchText);
+      sortedColumn = List.generate(8, (index) => false);
+      _currentPage += 1;
+      await getSearchResultApi();
+      _maxPage = (_searchResults.pageInfo.totalResults/_resultsPerPage).ceil();
       log('Searching Completed on YouTube!');
+      log('Max Page = $_maxPage');
+      log('Current Page = $_currentPage');
 
       isLoading = false;
       notifyListeners();
     }
   }
 
-  getSearchResultApi({String keyword = ''}) async {
+  getSearchResultApi() async {
     var uri = Uri.https(
       apiEndpoint,
       '/youtube/v3/search', 
       {
         'part': 'snippet',
-        'maxResults': '30',
+        'maxResults': '$_resultsPerPage',
         'key': _youtubeApiKey,
         'type':'video',
-        'q': keyword
+        'q': _searchText,
+        'pageToken' : _nextPageToken,
       }
     );
     try {
       http.Response response = await http.get(uri);
       switch (response.statusCode) {
         case 200:
-          searchResults = youtubeSearchFromJson(response.body);
-          _currentResults =  List.from(searchResults.items);
+          _searchResults = youtubeSearchFromJson(response.body);
+          _nextPageToken = _searchResults.nextPageToken;
+          _currentResults = _searchResults.items;
+
           await Future.wait(
             _currentResults.map(
               (element) async {
@@ -84,8 +121,12 @@ class YoutubeSearchProvider extends ChangeNotifier {
             log('[ERROR] Http Request Execution Error: ${err.toString()}');
             throw Exception(err);
           });
+
+          _displayedData.addAll(_currentResults);
+          _originData.addAll(_currentResults);
         default:
           log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
+          log('[ERROR] Http Response Error: ${response.body}');
           throw Exception(response.reasonPhrase);
       }
     } catch (err) {
@@ -166,6 +207,4 @@ class YoutubeSearchProvider extends ChangeNotifier {
     }
     return result;
   }
-
-
 }

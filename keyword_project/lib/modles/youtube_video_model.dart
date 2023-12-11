@@ -2,7 +2,7 @@
 //
 //     final youtubeVideo = youtubeVideoFromJson(jsonString);
 
-import 'dart:convert';
+import "dart:convert";
 
 YoutubeVideo youtubeVideoFromJson(String str) => YoutubeVideo.fromJson(json.decode(str));
 
@@ -53,7 +53,7 @@ class Item {
         // kind: json["kind"],
         // etag: json["etag"],
         // id: json["id"],
-        statistics: Statistics.fromJson(json["statistics"]),
+        statistics: json.containsKey("statistics")?Statistics.fromJson(json["statistics"]):Statistics(viewCount: "0", likeCount: "0", favoriteCount: "0", commentCount: "0"),
     );
 
     Map<String, dynamic> toJson() => {
@@ -78,10 +78,10 @@ class Statistics {
     });
 
     factory Statistics.fromJson(Map<String, dynamic> json) => Statistics(
-        viewCount: json.containsKey("viewCount")?json["viewCount"]:'0',
-        likeCount: json.containsKey("likeCount")?json["likeCount"]:'0',
-        favoriteCount: json.containsKey("favoriteCount")?json["favoriteCount"]:'0',
-        commentCount: json.containsKey("commentCount")?json["commentCount"]:'0',
+        viewCount: json.containsKey("viewCount")?json["viewCount"]:"0",
+        likeCount: json.containsKey("likeCount")?json["likeCount"]:"0",
+        favoriteCount: json.containsKey("favoriteCount")?json["favoriteCount"]:"0",
+        commentCount: json.containsKey("commentCount")?json["commentCount"]:"0",
     );
 
     Map<String, dynamic> toJson() => {
@@ -92,22 +92,22 @@ class Statistics {
     };
 }
 
-class PageInfo {
-    int totalResults;
-    int resultsPerPage;
+// class PageInfo {
+//     int totalResults;
+//     int resultsPerPage;
 
-    PageInfo({
-        required this.totalResults,
-        required this.resultsPerPage,
-    });
+//     PageInfo({
+//         required this.totalResults,
+//         required this.resultsPerPage,
+//     });
 
-    factory PageInfo.fromJson(Map<String, dynamic> json) => PageInfo(
-        totalResults: json["totalResults"],
-        resultsPerPage: json["resultsPerPage"],
-    );
+//     factory PageInfo.fromJson(Map<String, dynamic> json) => PageInfo(
+//         totalResults: json["totalResults"],
+//         resultsPerPage: json["resultsPerPage"],
+//     );
 
-    Map<String, dynamic> toJson() => {
-        "totalResults": totalResults,
-        "resultsPerPage": resultsPerPage,
-    };
-}
+//     Map<String, dynamic> toJson() => {
+//         "totalResults": totalResults,
+//         "resultsPerPage": resultsPerPage,
+//     };
+// }

@@ -12,7 +12,7 @@ class TableSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     var resultTable = context.watch<ResultTableProvider>();
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: SegmentedButton<Platforms>(
         segments: const <ButtonSegment<Platforms>>[
           ButtonSegment<Platforms>(value: Platforms.youtube, label: Text('YouTube')),

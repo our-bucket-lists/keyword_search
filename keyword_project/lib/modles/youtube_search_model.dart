@@ -2,7 +2,7 @@
 //
 //     final youtubeSearch = youtubeSearchFromJson(jsonString);
 
-import 'dart:convert';
+import "dart:convert";
 
 YoutubeSearch youtubeSearchFromJson(String str) => YoutubeSearch.fromJson(json.decode(str));
 
@@ -20,9 +20,9 @@ class YoutubeSearch {
     });
 
     factory YoutubeSearch.fromJson(Map<String, dynamic> json) => YoutubeSearch(
-        nextPageToken: json["nextPageToken"],
-        pageInfo: PageInfo.fromJson(json["pageInfo"]),
-        items: List<Item>.from(json["items"].map((x) => Item.fromJson(x))),
+        nextPageToken: json.containsKey("nextPageToken")?json["nextPageToken"]:"",
+        pageInfo: json.containsKey("pageInfo")?PageInfo.fromJson(json["pageInfo"]):PageInfo(totalResults: 0, resultsPerPage: 0),
+        items: json.containsKey("items")?List<Item>.from(json["items"].map((x) => Item.fromJson(x))):[],
     );
 
     Map<String, dynamic> toJson() => {
@@ -42,8 +42,8 @@ class Item {
     });
 
     factory Item.fromJson(Map<String, dynamic> json) => Item(
-        id: Id.fromJson(json["id"]),
-        snippet: Snippet.fromJson(json["snippet"]),
+        id: json.containsKey("id")?Id.fromJson(json["id"]):Id(videoId: "", videoViewCount: "", videoLikeCount: "", videoCommentCount: ""),
+        snippet: json.containsKey("snippet")?Snippet.fromJson(json["snippet"]):Snippet(publishedAt: DateTime.now(), channelId: "", title: "", description: "", channelTitle: "", publishTime: DateTime.now(), email: "", ig:"", followerCount: ""),
     );
 
     Map<String, dynamic> toJson() => {
@@ -66,10 +66,10 @@ class Id {
     });
 
     factory Id.fromJson(Map<String, dynamic> json) => Id(
-        videoId: json["videoId"],
-        videoViewCount: '',
-        videoLikeCount: '',
-        videoCommentCount: '',
+        videoId: json.containsKey("videoId")?json["videoId"]:"",
+        videoViewCount: "",
+        videoLikeCount: "",
+        videoCommentCount: "",
     );
 
     Map<String, dynamic> toJson() => {
@@ -101,15 +101,15 @@ class Snippet {
     });
 
     factory Snippet.fromJson(Map<String, dynamic> json) => Snippet(
-        publishedAt: DateTime.parse(json["publishedAt"]),
-        channelId: json["channelId"],
-        title: json["title"],
-        description: json["description"],
-        channelTitle: json["channelTitle"],
-        publishTime: DateTime.parse(json["publishTime"]),
-        email: '',
-        ig: '',
-        followerCount: '',
+        publishedAt: json.containsKey("publishedAt")?DateTime.parse(json["publishedAt"]):DateTime.now(),
+        channelId: json.containsKey("channelId")?json["channelId"]:"",
+        title: json.containsKey("title")?json["title"]:"",
+        description: json.containsKey("description")?json["description"]:"",
+        channelTitle: json.containsKey("channelTitle")?json["channelTitle"]:"",
+        publishTime: json.containsKey("publishTime")?DateTime.parse(json["publishTime"]):DateTime.now(),
+        email: "",
+        ig: "",
+        followerCount: "",
     );
 
     Map<String, dynamic> toJson() => {
@@ -132,8 +132,8 @@ class PageInfo {
     });
 
     factory PageInfo.fromJson(Map<String, dynamic> json) => PageInfo(
-        totalResults: json["totalResults"],
-        resultsPerPage: json["resultsPerPage"],
+        totalResults: json.containsKey("totalResults")?json["totalResults"]:0,
+        resultsPerPage: json.containsKey("resultsPerPage")?json["resultsPerPage"]:0,
     );
 
     Map<String, dynamic> toJson() => {
