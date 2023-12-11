@@ -2,10 +2,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:keyword_project/provider/result_table_provider.dart';
+import 'package:keyword_project/provider/youtube_provider.dart';
 import 'package:keyword_project/provider/pixnet_provider.dart';
 import 'package:keyword_project/provider/ig_provider.dart';
-import 'package:keyword_project/provider/youtube_provider.dart';
-import 'package:keyword_project/widgets/filter.dart';
 
 class PostSearchBar extends StatefulWidget {
   const PostSearchBar({super.key});
@@ -17,6 +17,11 @@ class PostSearchBar extends StatefulWidget {
 class _PostSearchBarState extends State<PostSearchBar> {
   @override
   Widget build(BuildContext context) {
+    var resultTable = context.watch<ResultTableProvider>();
+    var searchPixnet = context.read<PixnetSearchProvider>();
+    var searchInstagram = context.read<InstagramSearchProvider>();
+    var searchYoutube = context.read<YoutubeSearchProvider>();
+
     return SearchAnchor(
       builder: (BuildContext context, SearchController controller) {
         return SearchBar(
@@ -30,17 +35,30 @@ class _PostSearchBarState extends State<PostSearchBar> {
           ],
           onTap: () {},
           onChanged: (_) {},
-          onSubmitted: (value) {
-            log('Submit the value: $value');
+          onSubmitted: (value) async {
+            resultTable.isLoading = true;
 
-            var searchPixnet = context.read<PixnetSearchProvider>();
-            var searchInstagram = context.read<InstagramSearchProvider>();
-            var searchYoutube = context.read<YoutubeSearchProvider>();
-
+            log('Search Keyword: $value');
             searchPixnet.input = searchInstagram.input = searchYoutube.input = value;
-            searchPixnet.search();
-            searchInstagram.search();
-            searchYoutube.search();
+            try {
+              searchPixnet.search();
+            } catch (_) {
+              rethrow;
+            } finally {
+              try {
+                searchInstagram.search();
+              } catch (_) {
+                rethrow;
+              } finally {
+                try {
+                  searchYoutube.search();
+                } catch (_) {
+                  rethrow;
+                } finally {
+                  resultTable.isLoading = false;
+                }
+              }
+            }
           },
         );
       }, 
@@ -49,9 +67,7 @@ class _PostSearchBarState extends State<PostSearchBar> {
           const Padding(
             padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
             child: Row(
-              children: [
-                PlatformOptions(),
-              ],
+              children: [ ],
             ),
           ),
           const Divider(),

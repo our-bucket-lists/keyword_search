@@ -7,10 +7,10 @@ import 'package:keyword_project/widgets/youtube_result_table.dart';
 enum Platforms { pixnet, youtube, instagram }
 
 class ResultTableProvider extends ChangeNotifier {
-  Set<Platforms> _selectedPlatform = <Platforms>{Platforms.pixnet};
+  Set<Platforms> _selectedPlatform = <Platforms>{Platforms.youtube};
+  bool _isLoading = false;
 
   Set<Platforms> get selectedPlatform => _selectedPlatform;
-
   set selectedPlatform(Set<Platforms> input) {
     _selectedPlatform = input;
 
@@ -18,24 +18,22 @@ class ResultTableProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Widget get selectedTable {
-    log('Start to switching the table to $_selectedPlatform');
-    log('Pixnet [${_selectedPlatform.elementAt(0) == Platforms.pixnet}]');
-    log('Instagram [${_selectedPlatform.elementAt(0) == Platforms.instagram}]');
+  bool get isLoading => _isLoading;
+  set isLoading(bool input) {
+    _isLoading = input;
+    notifyListeners();
+  }
 
+  Widget get selectedTable {
     switch (_selectedPlatform.elementAt(0)) {
       case Platforms.pixnet:
-        log('Display the Pixnet Result Table.');
         return const PixnetResultTable();
       case Platforms.instagram:
-        log('Display the Instagram Result Table.');
         return const InstagramResultTable();
       case Platforms.youtube:
-        log('Display the YouTube Result Table.');
         return const YoutubeResultTable();
       default:
-        log('Display the Default Result Table, which is Pixnet Result Table.');
-        return const PixnetResultTable();
+        return const YoutubeResultTable();
     }
   }
 }

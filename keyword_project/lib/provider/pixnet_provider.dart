@@ -1,13 +1,13 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:keyword_project/common/global.dart';
 
 import 'package:keyword_project/modles/pixnet_search_model.dart';
 
 class PixnetSearchProvider extends ChangeNotifier {
-  static const apiEndpoint = 'www.pixnet.net';
+  static const apiEndpoint = 'ec2-13-210-189-82.ap-southeast-2.compute.amazonaws.com:5000';
 
   bool isLoading = true;
   String error = '';
@@ -20,7 +20,6 @@ class PixnetSearchProvider extends ChangeNotifier {
 
   set input(String inputText) {
     _searchText = inputText;
-    log("Recieve the input: $_searchText");
     // Notify listeners, in case the new catalog provides information
     // different from the previous one. For example, availability of an item
     // might have changed.
@@ -32,7 +31,6 @@ class PixnetSearchProvider extends ChangeNotifier {
 
   set results(List<Feed> inputList) {
     _currentResults = inputList;
-    log("Pixnet Current Result Changed: $_currentResults");
     // Notify listeners, in case the new catalog provides information
     // different from the previous one. For example, availability of an item
     // might have changed.
@@ -41,43 +39,63 @@ class PixnetSearchProvider extends ChangeNotifier {
 
   search() async {
     if (_searchText.isNotEmpty) {
-      log('Searching...');
-      await getSearchResultAPI(keyword: _searchText);
-      log('Completed!');
-    } else {}
+      isLoading = true;
+      notifyListeners();
+
+      log('Searching Started on Pixnet...');
+      await getSearchResultApi(keyword: _searchText);
+      log('Searching Completed on Pixnet!');
+
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
-  getSearchResultAPI({String keyword = ''}) async {
-    isLoading = true;
-    notifyListeners();
-    var uri = Uri.https(apiEndpoint,'/mainpage/api/ppage/$keyword/feeds', {'per_page': '25', 'sort': 'related'});
-    log(uri.toString());
+  getSearchResultApi({String keyword = ''}) async {
+    var uri = Uri.http(apiEndpoint,'/api/v1/pixnet/media', {'keyword': keyword});
     try {
-      http.Response response =
-          await http.get(uri);
-      if (response.statusCode == 200) {
-        log(response.body.toString());
-        searchResults = pixnetSearchFromJson(response.body);
-        _currentResults =  List.from(searchResults.data.results);
-        Map tmp;
-        for (var element in _currentResults) {
-          tmp = await getMorePixnetInfo(
-            Uri.https(
-              'www.pixnet.net',
-              '/pcard/${element.memberUniqid.toString()}/profile/info',
+      http.Response response = await http.get(uri);
+      switch (response.statusCode) {
+        case 200:
+          searchResults = pixnetSearchFromJson(response.body);
+          _currentResults =  List.from(searchResults.data.results);
+          await Future.wait(
+            _currentResults.map(
+              (element) async {
+                var info = await getMorePixnetInfo(queryUrl: Uri.https('www.pixnet.net', '/pcard/${element.memberUniqid.toString()}/profile/info',));
+                element.email = info['email'];
+                element.ig = info['ig'];
+              }
             )
-          );
-          element.email = tmp['email'];
-          element.ig = tmp['ig'];
-        }
-      } else {
-        error = response.statusCode.toString();
+          ).then(
+            (List response) => log('All Pixnet Searching processed.')
+          ).catchError((err) {
+            log('[ERROR] Http Request Execution Error: ${err.toString()}');
+            throw Exception(err);
+          });
+        default:
+          log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
+          throw Exception(response.reasonPhrase);
       }
-    } catch (e) {
-      error = e.toString();
+    } catch (err) {
+      log('[ERROR] Http Request Execution Error: ${err.toString()}');
+      rethrow;
     }
+  }
 
-    isLoading = false;
-    notifyListeners();
+  getMorePixnetInfo({required Uri queryUrl}) async {
+    var uri = Uri.http(
+      apiEndpoint,
+      '/api/v1/pixnet/profile', 
+      {'url': queryUrl.toString()}
+    );
+    http.Response response = await http.get(uri);
+    switch (response.statusCode) {
+      case 200:
+        return json.decode(response.body);
+      default:
+        log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
+        throw Exception(response.reasonPhrase);
+    }
   }
 }

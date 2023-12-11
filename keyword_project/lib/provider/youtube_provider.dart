@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:keyword_project/common/global.dart';
 
 import 'package:keyword_project/modles/youtube_search_model.dart';
 import 'package:keyword_project/modles/youtube_channel_model.dart' as channel;
@@ -10,6 +9,7 @@ import 'package:keyword_project/modles/youtube_video_model.dart' as video;
 
 class YoutubeSearchProvider extends ChangeNotifier {
   static const apiEndpoint = 'youtube.googleapis.com';
+  final String _youtubeApiKey = 'AIzaSyDl6f1JPAAE59rp_ts7Al_fX7vMG7-_4Sk';
   bool isLoading = true;
   String error = '';
   YoutubeSearch searchResults = YoutubeSearch(
@@ -20,11 +20,10 @@ class YoutubeSearchProvider extends ChangeNotifier {
   channel.YoutubeChannel channelResponse = channel.YoutubeChannel(items: []);
   video.YoutubeVideo videoResponse = video.YoutubeVideo(items: []);
   String _searchText = '';
-  final String _youtubeApiKey = 'AIzaSyDl6f1JPAAE59rp_ts7Al_fX7vMG7-_4Sk';
+  List<Item> _currentResults = [];
 
   set input(String inputText) {
     _searchText = inputText;
-    log("Recieve the input: $_searchText");
     // Notify listeners, in case the new catalog provides information
     // different from the previous one. For example, availability of an item
     // might have changed.
@@ -35,15 +34,19 @@ class YoutubeSearchProvider extends ChangeNotifier {
 
   search() async {
     if (_searchText.isNotEmpty) {
-      log('Searching...');
-      await getSearchResultAPI(keyword: _searchText);
-      log('Completed!');
-    } else {}
+      isLoading = true;
+      notifyListeners();
+
+      log('Searching Started on YouTube...');
+      await getSearchResultApi(keyword: _searchText);
+      log('Searching Completed on YouTube!');
+
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
-  getSearchResultAPI({String keyword = ''}) async {
-    isLoading = true;
-    notifyListeners();
+  getSearchResultApi({String keyword = ''}) async {
     var uri = Uri.https(
       apiEndpoint,
       '/youtube/v3/search', 
@@ -55,32 +58,41 @@ class YoutubeSearchProvider extends ChangeNotifier {
         'q': keyword
       }
     );
-    log(uri.toString());
     try {
       http.Response response = await http.get(uri);
-      if (response.statusCode == 200) {
-        log(response.body.toString());
-        searchResults = youtubeSearchFromJson(response.body);
-        
-        Map tmp;
-        for (var element in searchResults.items) {
-          tmp = await getYoutubeChannelInfo(element.snippet.channelId);
-          element.snippet.email = tmp['email'];
-          element.snippet.followerCount = tmp['followerCount'];
-          tmp = await getYoutubeVideoInfo(element.id.videoId);
-          element.id.videoViewCount = tmp['videoViewCount'];
-          element.id.videoLikeCount = tmp['videoLikeCount'];
-          element.id.videoCommentCount = tmp['videoCommentCount'];
-        }
-      } else {
-        error = response.statusCode.toString();
+      switch (response.statusCode) {
+        case 200:
+          searchResults = youtubeSearchFromJson(response.body);
+          _currentResults =  List.from(searchResults.items);
+          await Future.wait(
+            _currentResults.map(
+              (element) async {
+                var channelInfo = await getYoutubeChannelInfo(element.snippet.channelId);
+                var videoInfo = await getYoutubeVideoInfo(element.id.videoId);
+                // Channel
+                element.snippet.email = channelInfo['email'];
+                element.snippet.followerCount = channelInfo['followerCount'];
+                // Video
+                element.id.videoViewCount = videoInfo['videoViewCount'];
+                element.id.videoLikeCount = videoInfo['videoLikeCount'];
+                element.id.videoCommentCount = videoInfo['videoCommentCount'];
+              }
+            )
+          ).then(
+            (List response) => log('All YouTube Searching processed.')
+          ).catchError((err) {
+            log('[ERROR] Http Request Execution Error: ${err.toString()}');
+            throw Exception(err);
+          });
+        default:
+          log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
+          throw Exception(response.reasonPhrase);
       }
-    } catch (e) {
-      error = e.toString();
+    } catch (err) {
+      log('[ERROR] Http Request Execution Error: ${err.toString()}');
+      rethrow;
     }
 
-    isLoading = false;
-    notifyListeners();
   }
 
   getYoutubeChannelInfo(String channelId) async {
@@ -93,17 +105,17 @@ class YoutubeSearchProvider extends ChangeNotifier {
         'key': _youtubeApiKey,
       }
     );
-    log(uri.toString());
     try {
       http.Response response = await http.get(uri);
-      if (response.statusCode == 200) {
-        log(response.body.toString());
-        channelResponse = channel.youtubeChannelFromJson(response.body);
-      } else {
-        error = response.statusCode.toString();
+      switch (response.statusCode) {
+        case 200:
+          channelResponse = channel.youtubeChannelFromJson(response.body);
+        default:
+          log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
+          throw Exception(response.reasonPhrase);
       }
-    } catch (e) {
-      error = e.toString();
+    } catch (err) {
+      log('[ERROR] Http Request Execution Error: ${err.toString()}');
     }
 
     return {
@@ -111,7 +123,6 @@ class YoutubeSearchProvider extends ChangeNotifier {
       'followerCount': channelResponse.items[0].statistics.subscriberCount,
     };
   }
-
 
   getYoutubeVideoInfo(String videoId) async {
     var uri = Uri.https(
@@ -123,17 +134,18 @@ class YoutubeSearchProvider extends ChangeNotifier {
         'key': _youtubeApiKey,
       }
     );
-    log(uri.toString());
     try {
       http.Response response = await http.get(uri);
-      if (response.statusCode == 200) {
-        log(response.body.toString());
-        videoResponse = video.youtubeVideoFromJson(response.body);
-      } else {
-        error = response.statusCode.toString();
+      switch (response.statusCode) {
+        case 200:
+          videoResponse = video.youtubeVideoFromJson(response.body);
+        default:
+          log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
+          throw Exception(response.reasonPhrase);
       }
-    } catch (e) {
-      error = e.toString();
+    } catch (err) {
+      log('[ERROR] Http Request Execution Error: ${err.toString()}');
+      rethrow;
     }
 
     return {
@@ -141,6 +153,18 @@ class YoutubeSearchProvider extends ChangeNotifier {
       'videoLikeCount': videoResponse.items[0].statistics.likeCount,
       'videoCommentCount': videoResponse.items[0].statistics.commentCount,
     };
+  }
+
+  Set<String> getEmail(String data) {
+    Set<String> result = <String>{};
+    String regexString = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@((?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)";
+    RegExp regExp = RegExp(regexString);
+    var matches = regExp.allMatches(data);
+    
+    for (var m in matches) {
+      result.add(m.group(0).toString());
+    }
+    return result;
   }
 
 

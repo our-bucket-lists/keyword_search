@@ -19,6 +19,7 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
   int currentPage = 0;
   int sortIndex = 0;
   List<bool> sortedColumn= [false, false, false, false, false, false, false, false];
+  final List<double> _columnWidth = [120, 288, 64, 64, 64, 120, 64, 160];
   
   onSortColum(int columnIndex, bool ascending) {
     switch (columnIndex) {
@@ -100,11 +101,11 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
         (index) => DataRow(
           cells: [
             DataCell(SizedBox(
-              width: 80,
+              width: _columnWidth[0]-40,
               child: Text(DateFormat('yyyy/MM/dd').format(search.results[index].snippet.publishTime)))),
             DataCell(
               SizedBox(
-                width: 288,
+                width: _columnWidth[1]-2,
                 child: Tooltip(
                   message: search.results[index].snippet.title.toString(),
                   child: Text(
@@ -116,14 +117,14 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
               onTap: () => launchUrl(Uri.https('www.youtube.com','/watch', {'v': search.results[index].id.videoId.toString()})),
             ),
             DataCell(SizedBox(
-              width: 64,child: Text(overflow: TextOverflow.ellipsis,search.results[index].id.videoViewCount.toString()))),
+              width: _columnWidth[2],child: Text(overflow: TextOverflow.ellipsis,search.results[index].id.videoViewCount.toString()))),
             DataCell(SizedBox(
-              width: 64,child: Text(overflow: TextOverflow.ellipsis,search.results[index].id.videoLikeCount.toString()))),
+              width: _columnWidth[3],child: Text(overflow: TextOverflow.ellipsis,search.results[index].id.videoLikeCount.toString()))),
             DataCell(SizedBox(
-              width: 64,child: Text(overflow: TextOverflow.ellipsis,search.results[index].id.videoCommentCount.toString()))),
+              width: _columnWidth[4],child: Text(overflow: TextOverflow.ellipsis,search.results[index].id.videoCommentCount.toString()))),
             DataCell(
               SizedBox(
-                width: 112,
+                width: _columnWidth[5],
                 child: Tooltip(
                   message: search.results[index].snippet.channelTitle,
                   child: Text(
@@ -135,9 +136,9 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
               onTap: () => launchUrl(Uri.https('www.youtube.com','channel/${search.results[index].snippet.channelId}')),
             ),
             DataCell(SizedBox(
-              width: 64,child: Text(overflow: TextOverflow.ellipsis,search.results[index].snippet.followerCount.toString()))),
+              width: _columnWidth[6],child: Text(overflow: TextOverflow.ellipsis,search.results[index].snippet.followerCount.toString()))),
             DataCell(SizedBox(
-              width: 160,child: Text(overflow: TextOverflow.ellipsis,search.results[index].snippet.email.toString()))),
+              width: _columnWidth[7],child: Text(overflow: TextOverflow.ellipsis,search.results[index].snippet.email.toString()))),
             // DataCell(Text(search.results[index].replyCount.toString())),
           ],
           onSelectChanged: (bool? value) {
@@ -262,14 +263,14 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
               1, 
               (index) => DataRow(
                 cells: [
-                  DataCell(SizedBox(width: 120, child: Container(),)),
-                  DataCell(SizedBox(width: 280, child: Container(),)),
-                  DataCell(SizedBox(width: 64, child: Container(),)),
-                  DataCell(SizedBox(width: 64, child: Container(),)),
-                  DataCell(SizedBox(width: 64, child: Container(),)),
-                  DataCell(SizedBox(width: 112, child: Container(),)),
-                  DataCell(SizedBox(width: 64, child: Container(),)),
-                  DataCell(SizedBox(width: 168, child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[0], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[1], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[2], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[3], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[4], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[5], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[6], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[7], child: Container(),)),
                 ],
               )
             )

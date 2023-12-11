@@ -78,10 +78,10 @@ class Statistics {
     });
 
     factory Statistics.fromJson(Map<String, dynamic> json) => Statistics(
-        viewCount: json["viewCount"],
-        likeCount: json["likeCount"],
-        favoriteCount: json["favoriteCount"],
-        commentCount: json["commentCount"],
+        viewCount: json.containsKey("viewCount")?json["viewCount"]:'0',
+        likeCount: json.containsKey("likeCount")?json["likeCount"]:'0',
+        favoriteCount: json.containsKey("favoriteCount")?json["favoriteCount"]:'0',
+        commentCount: json.containsKey("commentCount")?json["commentCount"]:'0',
     );
 
     Map<String, dynamic> toJson() => {
