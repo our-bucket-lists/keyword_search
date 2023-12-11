@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:keyword_project/provider/result_table_provider.dart';
+import 'package:keyword_project/provider/youtube_provider.dart';
 
 import 'package:keyword_project/widgets/pixnet_filter.dart';
 import 'package:keyword_project/widgets/export_dialog.dart';
@@ -44,6 +45,8 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    var searchYoutube = context.read<YoutubeSearchProvider>();
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
@@ -90,6 +93,24 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       width: 16,
                       thickness: 1,
                       color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                    child: SizedBox(
+                      height: 40,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                        ),
+                        onPressed: () {searchYoutube.getOriginOder();}, 
+                        child: Text(
+                          '依相關度排序',
+                          style: Theme.of(context).textTheme.labelMedium,
+                        )
+                      ),
                     ),
                   ),
                   const Expanded(

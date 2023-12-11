@@ -16,7 +16,7 @@ class _PixnetFilterState extends State<PixnetFilter> {
 
     return Row(children: [
       Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: SizedBox(
           width: 200,
           height: 40,
@@ -39,7 +39,7 @@ class _PixnetFilterState extends State<PixnetFilter> {
         ),
       ),
       Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: SizedBox(
           width: 120,
           height: 40,
@@ -62,7 +62,7 @@ class _PixnetFilterState extends State<PixnetFilter> {
         ),
       ),
       Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: SizedBox(
           width: 120,
           height: 40,

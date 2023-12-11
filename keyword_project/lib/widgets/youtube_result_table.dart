@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'package:keyword_project/modles/youtube_search_model.dart';
 import 'package:keyword_project/provider/youtube_provider.dart';
+import 'package:keyword_project/widgets/infinite_scroll_controller.dart';
 
 class YoutubeResultTable extends StatefulWidget {
   const YoutubeResultTable({Key? key}) : super(key: key);
@@ -18,9 +19,9 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
   int rowsPerPage = 10;
   int currentPage = 0;
   int sortIndex = 0;
-  List<bool> sortedColumn= [false, false, false, false, false, false, false, false];
+  List<bool> sortedColumn= [];
   final List<double> _columnWidth = [120, 288, 64, 64, 64, 120, 64, 160];
-  
+
   onSortColum(int columnIndex, bool ascending) {
     switch (columnIndex) {
       case 0:
@@ -71,17 +72,7 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
         } else {
           filterData!.sort((a, b) => b.snippet.email.compareTo(a.snippet.email));
         }
-      // case 5:
-      //   if (ascending) {
-      //     filterData!.sort((a, b) => a.replyCount.compareTo(b.replyCount));
-      //   } else {
-      //     filterData!.sort((a, b) => b.replyCount.compareTo(a.replyCount));
-      //   }
     }
-  }
-
-  onUpdateTable() {
-
   }
 
   @override
@@ -94,7 +85,6 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
   @override
   Widget build(BuildContext context) {
     var searchYoutube = context.read<YoutubeSearchProvider>();
-
     var getDataRow = context.select<YoutubeSearchProvider, List<DataRow>>(
       (search) => List<DataRow>.generate(
         search.results.length, 
@@ -148,11 +138,15 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
     );
 
     filterData = searchYoutube.results;
+    sortedColumn = searchYoutube.sortedColumn;
 
     return SizedBox(
       width: double.infinity,
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
+        controller: InfiniteListenerController(onLoadMore: () {
+          searchYoutube.onLoadMore();
+        }),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
