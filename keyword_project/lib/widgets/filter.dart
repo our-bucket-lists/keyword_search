@@ -112,7 +112,7 @@ class _BasicFilterState extends State<BasicFilter> {
             context: context,
             builder: (BuildContext context) => const MyExportDialog()
           ),
-          label: const Text('Show Dialog'),
+          label: const Text('Export'),
           icon: const Icon(
             Icons.file_download,
           ),

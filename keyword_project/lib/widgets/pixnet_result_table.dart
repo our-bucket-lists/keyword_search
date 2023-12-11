@@ -22,6 +22,7 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
   int sortIndex = 0;
   List<bool> sortedColumn= [false, false, false, false, false, false, false];
   List<bool> selected =  List<bool>.generate(25 , (int index) => false);
+  final List<double> _columnWidth = [120, 296, 112, 112, 200, 80, 80];
   
 
   onSortColum(int columnIndex, bool ascending) {
@@ -46,15 +47,15 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
         }
       case 3:
         if (ascending) {
-          filterData!.sort((a, b) => a.email.compareTo(b.email));
-        } else {
-          filterData!.sort((a, b) => b.email.compareTo(a.email));
-        }
-      case 4:
-        if (ascending) {
           filterData!.sort((a, b) => a.ig.compareTo(b.ig));
         } else {
           filterData!.sort((a, b) => b.ig.compareTo(a.ig));
+        }
+      case 4:
+        if (ascending) {
+          filterData!.sort((a, b) => a.email.compareTo(b.email));
+        } else {
+          filterData!.sort((a, b) => b.email.compareTo(a.email));
         }
       case 5:
         if (ascending) {
@@ -91,11 +92,11 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
           cells: [
             DataCell(
               SizedBox(
-                width: 80,
+                width: _columnWidth[0]-40,
                 child: Text(DateFormat('yyyy/MM/dd').format(search.results[index].createdAt)))),
             DataCell(
               SizedBox(
-                width: 320,
+                width: _columnWidth[1]-2,
                 child: Tooltip(
                   message: search.results[index].title.toString(),
                   child: Text(
@@ -108,7 +109,7 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
             ),
             DataCell(
               SizedBox(
-                width: 120,
+                width: _columnWidth[2],
                 child: Tooltip(
                   message: search.results[index].displayName,
                   child: Text(
@@ -119,10 +120,9 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
               ),
               onTap: () => launchUrl(Uri.parse('https://www.pixnet.net/pcard/${search.results[index].memberUniqid.toString()}')),
             ),
-            DataCell(SizedBox(width: 188, child: Text(search.results[index].email.toString()))),
             DataCell(
               SizedBox(
-                width: 96,
+                width: _columnWidth[3],
                 child: Text(overflow: TextOverflow.ellipsis,search.results[index].ig.toString())),
               onTap: () {
                 if (search.results[index].ig.toString().isNotEmpty) {
@@ -130,8 +130,9 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
                 }
               }
             ),
-            DataCell(SizedBox(width: 72, child: Text(overflow: TextOverflow.ellipsis,search.results[index].hit.toString()))),
-            DataCell(SizedBox(width:72, child: Text(overflow: TextOverflow.ellipsis,search.results[index].replyCount.toString()))),
+            DataCell(SizedBox(width: _columnWidth[4], child: Text(search.results[index].email.toString()))),
+            DataCell(SizedBox(width: _columnWidth[5], child: Text(overflow: TextOverflow.ellipsis,search.results[index].hit.toString()))),
+            DataCell(SizedBox(width: _columnWidth[6], child: Text(overflow: TextOverflow.ellipsis,search.results[index].replyCount.toString()))),
           ],
           selected: selected[index],
           onSelectChanged: (bool? value) {
@@ -192,7 +193,7 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
                 },
               ),
               DataColumn(
-                label: const Text('Email', style: TextStyle(fontWeight: FontWeight.bold),),
+                label: const Text('IG', style: TextStyle(fontWeight: FontWeight.bold),),
                 onSort: (columnIndex, ascending) {
                   setState(() {
                     sortIndex = columnIndex;
@@ -202,7 +203,7 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
                 },
               ),
               DataColumn(
-                label: const Text('Instagram', style: TextStyle(fontWeight: FontWeight.bold),),
+                label: const Text('Email', style: TextStyle(fontWeight: FontWeight.bold),),
                 onSort: (columnIndex, ascending) {
                   setState(() {
                     sortIndex = columnIndex;
@@ -240,13 +241,13 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
               1, 
               (index) => DataRow(
                 cells: [
-                  DataCell(SizedBox(width: 120, child: Container(),)),
-                  DataCell(SizedBox(width: 320, child: Container(),)),
-                  DataCell(SizedBox(width: 120, child: Container(),)),
-                  DataCell(SizedBox(width: 188, child: Container(),)),
-                  DataCell(SizedBox(width: 96, child: Container(),)),
-                  DataCell(SizedBox(width: 72, child: Container(),)),
-                  DataCell(SizedBox(width: 72, child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[0], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[1], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[2], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[3], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[4], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[5], child: Container(),)),
+                  DataCell(SizedBox(width: _columnWidth[6], child: Container(),)),
                 ],
               )
             ),

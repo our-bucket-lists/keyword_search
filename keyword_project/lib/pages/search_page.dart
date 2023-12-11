@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:keyword_project/provider/result_table_provider.dart';
-import 'package:keyword_project/widgets/pixnet_filter.dart';
-import 'package:keyword_project/widgets/export_dialog.dart';
 import 'package:provider/provider.dart';
 
+import 'package:keyword_project/provider/result_table_provider.dart';
+
+import 'package:keyword_project/widgets/pixnet_filter.dart';
+import 'package:keyword_project/widgets/export_dialog.dart';
 import 'package:keyword_project/widgets/search_bar.dart';
-import 'package:keyword_project/widgets/result_table_switcher.dart';
+import 'package:keyword_project/widgets/table_switcher.dart';
 
 
 
@@ -17,7 +18,30 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
-class _SearchPageState extends State<SearchPage> {
+class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
+  late AnimationController controller;
+  bool determinate = false;
+  
+  @override
+  void initState() {
+    controller = AnimationController(
+      /// [AnimationController]s can be created with `vsync: this` because of
+      /// [TickerProviderStateMixin].
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..addListener(() {
+        setState(() {});
+      });
+    controller.repeat();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -78,7 +102,7 @@ class _SearchPageState extends State<SearchPage> {
                         context: context,
                         builder: (BuildContext context) => const MyExportDialog()
                       ),
-                      label: const Text('Show Dialog'),
+                      label: const Text('Export'),
                       icon: const Icon(
                         Icons.file_download,
                       ),
@@ -87,6 +111,11 @@ class _SearchPageState extends State<SearchPage> {
                 ],
               ),
             ),
+          ),
+          // Progress Indicator
+          LinearProgressIndicator(
+            value: context.watch<ResultTableProvider>().isLoading?
+              controller.value:0,
           ),
           // Content
           Expanded(

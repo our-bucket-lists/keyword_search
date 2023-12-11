@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:keyword_project/modles/ig_search_model.dart';
+import 'package:keyword_project/modles/ig_media_search_model.dart';
 import 'package:keyword_project/provider/ig_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -14,61 +14,50 @@ class InstagramResultTable extends StatefulWidget {
 }
 
 class _InstagramResultTableState extends State<InstagramResultTable> {
-  List<MediaElement>? filterData;
+  List<Datum>? filterData;
   int rowsPerPage = 10;
   int currentPage = 0;
   int sortIndex = 0;
   List<bool> sortedColumn = [false, false, false, false, false, false];
+  final List<double> _columnWidth = [120, 640, 160, 96, 96];
 
   onSortColum(int columnIndex, bool ascending) {
     switch (columnIndex) {
       case 0:
         if (ascending) {
-          filterData!.sort((a, b) => a.media.caption.createdAtUtc
-              .compareTo(b.media.caption.createdAtUtc));
+          filterData!.sort((a, b) => a.timestamp.compareTo(b.timestamp));
         } else {
-          filterData!.sort((a, b) => b.media.caption.createdAtUtc
-              .compareTo(a.media.caption.createdAtUtc));
+          filterData!.sort((a, b) => b.timestamp.compareTo(a.timestamp));
         }
       case 1:
         if (ascending) {
           filterData!.sort(
-              (a, b) => a.media.caption.text.compareTo(b.media.caption.text));
+              (a, b) => a.caption.compareTo(b.caption));
         } else {
           filterData!.sort(
-              (a, b) => b.media.caption.text.compareTo(a.media.caption.text));
+              (a, b) => b.caption.compareTo(a.caption));
         }
       case 2:
         if (ascending) {
-          filterData!.sort((a, b) => a.media.caption.user.fullName
-              .compareTo(b.media.caption.user.fullName));
+          filterData!.sort((a, b) => a.username.compareTo(b.username));
         } else {
-          filterData!.sort((a, b) => b.media.caption.user.fullName
-              .compareTo(a.media.caption.user.fullName));
+          filterData!.sort((a, b) => b.username.compareTo(a.username));
         }
       case 3:
         if (ascending) {
-          filterData!.sort((a, b) => a.media.caption.user.username
-              .compareTo(b.media.caption.user.username));
+          filterData!
+              .sort((a, b) => a.likeCount.compareTo(b.likeCount));
         } else {
-          filterData!.sort((a, b) => b.media.caption.user.username
-              .compareTo(a.media.caption.user.username));
+          filterData!
+              .sort((a, b) => b.likeCount.compareTo(a.likeCount));
         }
       case 4:
         if (ascending) {
-          filterData!
-              .sort((a, b) => a.media.likeCount.compareTo(b.media.likeCount));
-        } else {
-          filterData!
-              .sort((a, b) => b.media.likeCount.compareTo(a.media.likeCount));
-        }
-      case 5:
-        if (ascending) {
           filterData!.sort(
-              (a, b) => a.media.commentCount.compareTo(b.media.commentCount));
+              (a, b) => a.commentsCount.compareTo(b.commentsCount));
         } else {
           filterData!.sort(
-              (a, b) => b.media.commentCount.compareTo(a.media.commentCount));
+              (a, b) => b.commentsCount.compareTo(a.commentsCount));
         }
     }
   }
@@ -100,71 +89,44 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
             DataCell(Text('-')),
             DataCell(Text('-')),
             DataCell(Text('-')),
-            DataCell(Text('-')),
           ]
         )
       ]: List<DataRow>.generate(
-          search.results[0].layoutContent.fillItems.length,
+          search.results.length,
           (index) => DataRow(
                 cells: [
                   DataCell(SizedBox(
-                    width: 80,
-                    child: Text(DateFormat('yyyy/MM/dd').format(search
-                        .results[0]
-                        .layoutContent
-                        .fillItems[index]
-                        .media
-                        .caption
-                        .createdAtUtc)),
+                    width: _columnWidth[0]-40,
+                    child: Text(DateFormat('yyyy/MM/dd').format(search.results[index].timestamp)),
                   )),
                   DataCell(
                     SizedBox(
-                      width: 520,
-                      child: Tooltip(
-                        message: search.results[0].layoutContent.fillItems[index].media.caption.text
-                            .toString(),
-                        child: Text(
-                          overflow: TextOverflow.ellipsis,
-                          search.results[0].layoutContent.fillItems[index].media.caption.text.toString().replaceAll("\n", " "),
-                        ),
+                      width: _columnWidth[1]-2,
+                      child: Text(
+                        overflow: TextOverflow.ellipsis,
+                        search.results[index].caption.toString().replaceAll("\n", " "),
                       ),
                     ),
-                    onTap: () => launchUrl(Uri.https(site,
-                        '/p/${search.results[0].layoutContent.fillItems[index].media.code.toString()}')),
+                    onTap: () => launchUrl(Uri.parse(search.results[index].permalink.toString())),
                   ),
                   DataCell(
                     SizedBox(
-                        width: 160,
+                        width: _columnWidth[2],
                         child: Tooltip(
-                          message: search.results[0].layoutContent.fillItems[index].media.caption.user.fullName,
+                          message: search.results[index].username,
                           child: Text(
                               overflow: TextOverflow.ellipsis,
-                              search.results[0].layoutContent.fillItems[index].media.caption.user.fullName),
+                              search.results[index].username,),
                         )),
-                    onTap: () => launchUrl(Uri.https(site,
-                        search.results[0].layoutContent.fillItems[index].media.caption.user.username.toString())),
-                  ),
-                  DataCell(
-                    SizedBox(
-                        width: 88,
-                        child: Tooltip(
-                          message: search.results[0].layoutContent.fillItems[index].media.caption.user.username,
-                          child: Text(
-                              overflow: TextOverflow.ellipsis,
-                              search.results[0].layoutContent.fillItems[index].media.caption.user.username,),
-                        )),
-                    onTap: () => launchUrl(Uri.https(
-                        site,
-                        search.results[0].layoutContent.fillItems[index].media.caption.user.username.toString())),
-                  ),
+                    onTap: () => launchUrl(Uri.https(site,search.results[index].username.toString())),),
                   DataCell(SizedBox(
-                    width: 80,
-                    child: Text(overflow: TextOverflow.ellipsis,search.results[0].layoutContent.fillItems[index].media.likeCount
+                    width: _columnWidth[3],
+                    child: Text(overflow: TextOverflow.ellipsis,search.results[index].likeCount
                         .toString()),
                   )),
                   DataCell(SizedBox(
-                    width: 80,
-                    child: Text(overflow: TextOverflow.ellipsis,search.results[0].layoutContent.fillItems[index].media.commentCount
+                    width: _columnWidth[4],
+                    child: Text(overflow: TextOverflow.ellipsis,search.results[index].commentsCount
                         .toString()),
                   )),
                 ],
@@ -172,7 +134,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
               )),
     );
 
-    filterData = isNoResult? []:searchInstagram.results[0].layoutContent.fillItems;
+    filterData = isNoResult? []:searchInstagram.results;
 
     return SizedBox(
       width: double.infinity,
@@ -205,19 +167,6 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
               DataColumn(
                 label: const Text(
                   '摘要',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                onSort: (columnIndex, ascending) {
-                  setState(() {
-                    sortIndex = columnIndex;
-                    sortedColumn[columnIndex] = ascending;
-                  });
-                  onSortColum(columnIndex, ascending);
-                },
-              ),
-              DataColumn(
-                label: const Text(
-                  '創作者',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 onSort: (columnIndex, ascending) {
@@ -275,12 +224,16 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                 1, 
                 (index) => DataRow(
                   cells: [
-                    DataCell(SizedBox(width: 120, child: Container(),)),
-                    DataCell(SizedBox(width: 520, child: Container(),)),
-                    DataCell(SizedBox(width: 160, child: Container(),)),
-                    DataCell(SizedBox(width: 88, child: Container(),)),
-                    DataCell(SizedBox(width: 80, child: Container(),)),
-                    DataCell(SizedBox(width: 80, child: Container(),)),
+                    DataCell(SizedBox(width: _columnWidth[0], child: Container(),)),
+                    DataCell(SizedBox(width: _columnWidth[1], child: Container(),)),
+                    DataCell(SizedBox(width: _columnWidth[2], child: Container(),)),
+                    DataCell(SizedBox(width: _columnWidth[3], child: Container(),)),
+                    DataCell(SizedBox(width: _columnWidth[4], child: Container(),)),
+                    // DataCell(SizedBox(width: 120, child: Container(),)),
+                    // DataCell(SizedBox(width: 600, child: Container(),)),
+                    // DataCell(SizedBox(width: 168, child: Container(),)),
+                    // DataCell(SizedBox(width: 120, child: Container(),)),
+                    // DataCell(SizedBox(width: 120, child: Container(),)),
                   ],
                 )
               ):

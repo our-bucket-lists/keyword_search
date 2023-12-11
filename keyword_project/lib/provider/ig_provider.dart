@@ -1,102 +1,126 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:keyword_project/modles/ig_search_model.dart';
+import 'package:keyword_project/modles/ig_hashtag_search_model.dart' as hashtag;
+import 'package:keyword_project/modles/ig_media_search_model.dart';
 
 
 class InstagramSearchProvider extends ChangeNotifier {
-  static const apiEndpoint ='www.instagram.com';
-
+  static const apiEndpoint = 'graph.facebook.com';
+  static const userId = '17841400502414397';
+  static const token = 'EAAYs6H9ZCiEEBO95RzZBFWOF3HO787oQbegx9mWyxhZBD5TZBW0ZBUxBO0u9vU7soXU7d4y3zy1gVSMJfefR5eVBYUzuNUif1jn5UmJfA3PG4af4hu56oACZB91dTxGERxeaAfN161KVdNQM9EmUyp28NwnhYcP5uLLl4vOCfWQQD5bMo9Jx7j0J9nVNvnBxZBBqZBs5hvaBzaVwvVhEnMF5YdMaBVoZD';
   bool isLoading = true;
   String error = '';
-  InstagramSearch searchResults = InstagramSearch(
-    count: 0, 
-    data: Data(
-      mediaCount: 0,
-      top: Top(),
-    ), 
-    status: ''
-  );
+  hashtag.IgHashtagSearch hashtagResult = hashtag.IgHashtagSearch(data: []);
+  IgMediaSearch searchResults = IgMediaSearch(data: [], paging: Paging(cursors: Cursors(after: ''), next: ''));
   String _searchText = '';
+  List<Datum> _currentResults = [];
 
   set input(String inputText) {
     _searchText = inputText;
-    log("Recieve the input: $_searchText");
     // Notify listeners, in case the new catalog provides information
     // different from the previous one. For example, availability of an item
     // might have changed.
     notifyListeners();
   }
   
-  List<Section> get results => searchResults.data.top.sections;
+  List<Datum> get results => searchResults.data;
 
   search() async {
     if (_searchText.isNotEmpty) {
-      log('Searching on Instagram...');
-      await getSearchResultAPI(keyword: _searchText);
-      log('Completed on Instagram!');
-    } else {
+      isLoading = true;
+      notifyListeners();
 
+      log('Searching Started on Instagram...');
+      String hashtagId = await getHashTagIdApi(keyword: _searchText);
+      await getSearchResultApi(hashtagId);
+      log('Searching Completed on Instagram!');
+
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+  
+  Future<String> getHashTagIdApi({String keyword=''}) async {
+    var uri = Uri.http(
+      apiEndpoint,
+      '/v18.0/ig_hashtag_search',
+      {
+        'q': keyword,
+        'user_id': userId,
+        'access_token': token,
+      }
+    );
+
+    try {
+      http.Response response = await http.get(uri);
+      switch (response.statusCode) {
+        case 200:
+          hashtagResult = hashtag.igHashtagSearchFromJson(response.body);
+          return hashtagResult.data.first.id;
+        default:
+          log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
+          throw Exception(response.reasonPhrase);
+      }
+    } catch (err) {
+      log('[ERROR] Http Request Execution Error: ${err.toString()}');
+      rethrow;
     }
   }
 
-  getSearchResultAPI({String keyword=''}) async {
+  getSearchResultApi(String hashtagId) async {
     var uri = Uri.http(
-      '127.0.0.1:5000',
-      '/api/v1/ig',
-      {'tag_name': keyword
+      apiEndpoint,
+      '/v18.0/$hashtagId/top_media',
+      {
+        'fields': 'caption,comments_count,like_count,permalink,timestamp',
+        'user_id': userId,
+        'access_token': token,
       }
     );
-    var headersList = {
-      'authority': 'www.instagram.com',
-      'accept': '*/*',
-      'accept-language': 'en-US,en;q=0.9',
-      'cookie': 'ig_did=550C8BF4-304D-4FD8-A345-E3A972F59A15; ig_nrcb=1; datr=gdvlZAj-NqukUm_bOV2ZGjrw; mid=ZOXbggAEAAFgD79ik0vu9a6OZpi6; locale=zh_TW; fbm_124024574287414=base_domain=.instagram.com; shbid="171850542814247470541732187079:01f7a0ded7d20d523107860a36adc89ac6e572d4e09c6858487c9ccf8c178c48d7e011ad"; shbts="17006510790542814247470541732187079:01f799d4d532edafadd1f11e28e26b350c4ab8b6d49d25f583fc1305710433c0a4026f9b"; csrftoken=wEQAfPqR2DNpWdLTRaH0nVofFKxsQCT0; ds_user_id=281424747; sessionid=281424747%3AyvDtL1wYTIEICR%3A5%3AAYdygacI7CJWlNnSFpfKl7NxcJvuUSLjprxOqy1gEQ; rur="CCO0542814247470541732216386:01f734a88ddf27e6a2b058da286c9e9de00ad5e4885d4b0d0e9b6dfefb79ffe27af7a210"',
-      'dnt': '1',
-      'dpr': '2',
-      'referer': 'https://www.instagram.com/explore/tags/%E6%B8%AC%E8%A9%A6/',
-      'sec-ch-prefers-color-scheme': 'dark',
-      'sec-ch-ua': 'Microsoft Edge";v="119", "Chromium";v="119", "Not?A_Brand";v="24',
-      'sec-ch-ua-full-version-list': 'Microsoft Edge";v="119.0.2151.58", "Chromium";v="119.0.6045.123", "Not?A_Brand";v="24.0.0.0',
-      'sec-ch-ua-mobile': '?0',
-      'sec-ch-ua-model': '',
-      'sec-ch-ua-platform': 'macOS',
-      'sec-ch-ua-platform-version': '13.6.2',
-      'sec-fetch-dest': 'empty',
-      'sec-fetch-mode': 'cors',
-      'sec-fetch-site': 'same-origin',
-      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0',
-      'viewport-width': '688',
-      'x-asbd-id': '129477',
-      'x-csrftoken': 'wEQAfPqR2DNpWdLTRaH0nVofFKxsQCT0',
-      'x-ig-app-id': '936619743392459',
-      'x-ig-www-claim': 'hmac.AR1MfMnTlsS4u5vssROtVRm1iMJ_9-6aG2p2SlobP0mbAB2z',
-      'x-requested-with': 'XMLHttpRequest' 
-      };
-    isLoading = true;
-    notifyListeners();
-    log(uri.toString());
 
     try {
-      http.Response response = await http.get(
-        uri, 
-        headers: headersList
-      );
-      if (response.statusCode == 200) {
-        log('Response from Instegra: ${response.body}');
-        searchResults = instagramSearchFromJson(response.body);
-      } else {
-        error = response.statusCode.toString();
-        log('Http Response Error: $error');
+      http.Response response = await http.get(uri);
+      switch (response.statusCode) {
+        case 200:
+          searchResults = igMediaSearchFromJson(response.body);
+          _currentResults =  List.from(searchResults.data);
+          await Future.wait(
+            _currentResults.map(
+              (element) async => element.username = await getMoreIgInfo(queryUrl: Uri.parse(element.permalink))
+            )
+          ).then(
+            (List response) => log('All Instagram Searching processed.')
+          ).catchError((err) {
+            log('[ERROR] Http Request Execution Error: ${err.toString()}');
+            throw Exception(throw err);
+          });
+        default:
+          log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
+          throw Exception(response.reasonPhrase);
       }
-    } catch (e) {
-      error = e.toString();
-      log('Http Request Execution Error: $error');
+    } catch (err) {
+      log('[ERROR] Http Request Execution Error: ${err.toString()}');
+      rethrow;
     }
+  }
 
-    isLoading = false;
-    notifyListeners();
+  getMoreIgInfo({required Uri queryUrl}) async {
+    var uri = Uri.http(
+      'ec2-13-210-189-82.ap-southeast-2.compute.amazonaws.com:5000',
+      '/api/v1/instagram/profile', 
+      {'url': queryUrl.toString()}
+    );
+    http.Response response = await http.get(uri);
+    switch (response.statusCode) {
+      case 200:
+        return json.decode(response.body).containsKey('username')?json.decode(response.body)['username']:'';
+      default:
+        log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
+        throw Exception(response.reasonPhrase);
+    }
   }
 }
