@@ -8,81 +8,149 @@ import 'package:keyword_project/modles/youtube_channel_model.dart' as channel;
 import 'package:keyword_project/modles/youtube_video_model.dart' as video;
 
 class YoutubeSearchProvider extends ChangeNotifier {
-  static const apiEndpoint = 'youtube.googleapis.com';
-  final String _youtubeApiKey = 'AIzaSyDEnd1p2BskDTOYUfldRuHMTI5LeSKGEBI';
-  bool isLoading = true;
-  String error = '';
-  YoutubeSearch _searchResults = YoutubeSearch(
-    nextPageToken: '', 
-    pageInfo: PageInfo(totalResults: 0, resultsPerPage: 0), 
-    items: []
-  );
-  channel.YoutubeChannel channelResponse = channel.YoutubeChannel(items: []);
-  video.YoutubeVideo videoResponse = video.YoutubeVideo(items: []);
+  // For API request
+  static const _apiEndpoint = 'youtube.googleapis.com';
+  final String _youtubeApiKey = 'AIzaSyDl6f1JPAAE59rp_ts7Al_fX7vMG7-_4Sk';
+  final int _resultsPerPage = 50;
   String _searchText = '';
-  List<Item> _currentResults = [];
-  List<Item> _originData = [];
-  List<Item> _displayedData = [];
   String _nextPageToken = '';
   int _maxPage = 0;
   int _currentPage = 0;
-  int _resultsPerPage = 50;
-  List<bool> sortedColumn = List.generate(8, (index) => false);
 
-  set input(String inputText) {
-    _searchText = inputText;
-    _displayedData = [];
+  // For API response
+  YoutubeSearch _searchResults = YoutubeSearch(
+      nextPageToken: '', 
+      pageInfo: PageInfo(totalResults: 0, resultsPerPage: 0), 
+      items: []
+    );
+  channel.YoutubeChannel _channelResponse = channel.YoutubeChannel(items: []);
+  video.YoutubeVideo _videoResponse = video.YoutubeVideo(items: []);
+  
+  // For Data storage
+  final List<Item> _originalData = [];
+  List<Item> _displayedData = [];
+  
+  // For data sorting and filtering
+  FilterCriteria filterCriteria = FilterCriteria(
+    titleContainedText: '', 
+    viewCountLowerBound: '0', 
+    likeCountLowerBound: '0', 
+    commentCountLowerBound: '0',
+    mustContainsEmail: false
+  );
+  List<bool> _isAscendingSortedColumn = List.generate(8, (index) => false);
+  bool _isSortByRelevance = false;
+  int _sortedColumnIndex = 0;
+  bool isLoadMoreDisplayed = false;
+  
+  // Seter
+  set searchText(String searchText) {
+    _searchText = searchText;
     _nextPageToken = '';
     _maxPage = 0;
     _currentPage = 0;
+    _displayedData = [];
+    _isAscendingSortedColumn = List.generate(8, (index) => false);
+    _isSortByRelevance = true;
   }
 
-  List<Item> get results => _displayedData;
+  // Geter
+  List<Item> get originalData => _originalData;
+  List<Item> get displayedData => _displayedData;
+  List<bool> get isAscendingSortedColumn => _isAscendingSortedColumn;
+  int get sortedColumnIndex => _sortedColumnIndex;
+  bool get isSortByRelevance => _isSortByRelevance;
 
-  onLoadMore() async {
-    if (_currentPage < _maxPage) {
-      isLoading = true;
-      notifyListeners();
-
-      log('Loading more is started on YouTube...');
-      _currentPage += 1;
-      await getSearchResultApi();
-      log('Loading more is completed on YouTube!');
-      log('Current Page = $_currentPage');
-
-      isLoading = false;
-      notifyListeners();
+  // Dealing with the data to be displayed
+  void onDisplayedDataSort (int columnIndex, bool isAscending) {
+    _isSortByRelevance = false;
+    _sortedColumnIndex = columnIndex;
+    _isAscendingSortedColumn[_sortedColumnIndex] = isAscending;
+    switch (_sortedColumnIndex) {
+      case 0:
+        _displayedData.sort((a, b) => _onCompare(isAscending, a.snippet.publishTime, b.snippet.publishTime));
+      case 1:
+        _displayedData.sort((a, b) => _onCompare(isAscending, a.snippet.title, b.snippet.title));
+      case 2:
+        _displayedData.sort((a, b) => _onCompare(isAscending, int.parse(a.id.videoViewCount), int.parse(b.id.videoViewCount)));
+      case 3:
+        _displayedData.sort((a, b) => _onCompare(isAscending, int.parse(a.id.videoLikeCount), int.parse(b.id.videoLikeCount)));
+      case 4:
+        _displayedData.sort((a, b) => _onCompare(isAscending, int.parse(a.id.videoCommentCount), int.parse(b.id.videoCommentCount)));
+      case 5:
+        _displayedData.sort((a, b) => _onCompare(isAscending, a.snippet.channelTitle, b.snippet.channelTitle));
+      case 6:
+        _displayedData.sort((a, b) => _onCompare(isAscending, int.parse(a.snippet.followerCount), int.parse(b.snippet.followerCount)));
+      case 7:
+        _displayedData.sort((a, b) => _onCompare(isAscending, a.snippet.email, b.snippet.email));
     }
-  }
-
-  getOriginOder() {
-    _displayedData = List.from(_originData);
-    sortedColumn = List.generate(8, (index) => false);
     notifyListeners();
   }
 
+  void onDisplayedDataFilterSort () {
+    _displayedData = _onFilter(_originalData);
+    if (_isSortByRelevance) {
+      notifyListeners();
+    } else {
+      onDisplayedDataSort(_sortedColumnIndex, isAscendingSortedColumn[_sortedColumnIndex]);
+    }
+  }
+
+  void onDisplayedDataSortByRelevance () {
+    _isSortByRelevance = true;
+    _isAscendingSortedColumn = List.generate(8, (index) => false);
+    _displayedData = _onFilter(_originalData);
+    notifyListeners();
+  }
+
+  int _onCompare(bool isAscending, var a, var b) {
+    if (isAscending) {
+      return a.compareTo(b);
+    } else {
+      return b.compareTo(a);
+    }
+  }
+
+  List<Item> _onFilter (List<Item> inputList) {
+    return inputList.
+      where((element) => element.snippet.title.toLowerCase().contains(filterCriteria.titleContainedText.toLowerCase())).
+      where((element) => int.parse(element.id.videoViewCount)>=int.parse(filterCriteria.viewCountLowerBound)).
+      where((element) => int.parse(element.id.videoLikeCount)>=int.parse(filterCriteria.likeCountLowerBound)).
+      where((element) => int.parse(element.id.videoCommentCount)>=int.parse(filterCriteria.commentCountLowerBound)).
+      where((element) => filterCriteria.mustContainsEmail?element.snippet.email.isNotEmpty:true).toList();
+  }
+
+  // Getting data via API
   search() async {
     if (_searchText.isNotEmpty) {
-      isLoading = true;
-      notifyListeners();
-
       log('Searching Started on YouTube...');
-      sortedColumn = List.generate(8, (index) => false);
       _currentPage += 1;
-      await getSearchResultApi();
+      await _getSearchResultApi();
       _maxPage = (_searchResults.pageInfo.totalResults/_resultsPerPage).ceil();
       log('Searching Completed on YouTube!');
       log('Max Page = $_maxPage');
       log('Current Page = $_currentPage');
 
-      isLoading = false;
       notifyListeners();
     }
   }
 
-  getSearchResultApi() async {
+  onLoadMore() async {
+    if (_currentPage < _maxPage) {
+      log('Loading more is started on YouTube...');
+      _currentPage += 1;
+      await _getSearchResultApi();
+      log('Loading more is completed on YouTube!');
+      log('Current Page = $_currentPage');
+
+      notifyListeners();
+    }
+  }
+
+  _getSearchResultApi() async {
+    List<Item> currentResults = [];
     var uri = Uri.https(
-      apiEndpoint,
+      _apiEndpoint,
       '/youtube/v3/search', 
       {
         'part': 'snippet',
@@ -99,13 +167,13 @@ class YoutubeSearchProvider extends ChangeNotifier {
         case 200:
           _searchResults = youtubeSearchFromJson(response.body);
           _nextPageToken = _searchResults.nextPageToken;
-          _currentResults = _searchResults.items;
+          currentResults = _searchResults.items;
 
           await Future.wait(
-            _currentResults.map(
+            currentResults.map(
               (element) async {
-                var channelInfo = await getYoutubeChannelInfo(element.snippet.channelId);
-                var videoInfo = await getYoutubeVideoInfo(element.id.videoId);
+                var channelInfo = await _getYoutubeChannelInfo(element.snippet.channelId);
+                var videoInfo = await _getYoutubeVideoInfo(element.id.videoId);
                 // Channel
                 element.snippet.email = channelInfo['email'];
                 element.snippet.followerCount = channelInfo['followerCount'];
@@ -122,8 +190,8 @@ class YoutubeSearchProvider extends ChangeNotifier {
             throw Exception(err);
           });
 
-          _displayedData.addAll(_currentResults);
-          _originData.addAll(_currentResults);
+          _displayedData.addAll(_onFilter(currentResults));
+          _originalData.addAll(currentResults);
         default:
           log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
           log('[ERROR] Http Response Error: ${response.body}');
@@ -133,12 +201,11 @@ class YoutubeSearchProvider extends ChangeNotifier {
       log('[ERROR] Http Request Execution Error: ${err.toString()}');
       rethrow;
     }
-
   }
 
-  getYoutubeChannelInfo(String channelId) async {
+  _getYoutubeChannelInfo(String channelId) async {
     var uri = Uri.https(
-      apiEndpoint, 
+      _apiEndpoint, 
       '/youtube/v3/channels',
       {
         'part': 'snippet,statistics',
@@ -150,7 +217,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
       http.Response response = await http.get(uri);
       switch (response.statusCode) {
         case 200:
-          channelResponse = channel.youtubeChannelFromJson(response.body);
+          _channelResponse = channel.youtubeChannelFromJson(response.body);
         default:
           log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
           throw Exception(response.reasonPhrase);
@@ -160,14 +227,14 @@ class YoutubeSearchProvider extends ChangeNotifier {
     }
 
     return {
-      'email': getEmail(channelResponse.items[0].snippet.description.replaceAll('\n', ' ')).join(', '),
-      'followerCount': channelResponse.items[0].statistics.subscriberCount,
+      'email': _getEmail(_channelResponse.items[0].snippet.description.replaceAll('\n', ' ')).join(', '),
+      'followerCount': _channelResponse.items[0].statistics.subscriberCount,
     };
   }
 
-  getYoutubeVideoInfo(String videoId) async {
+  _getYoutubeVideoInfo(String videoId) async {
     var uri = Uri.https(
-      apiEndpoint, 
+      _apiEndpoint, 
       '/youtube/v3/videos',
       {
         'part': 'statistics',
@@ -179,7 +246,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
       http.Response response = await http.get(uri);
       switch (response.statusCode) {
         case 200:
-          videoResponse = video.youtubeVideoFromJson(response.body);
+          _videoResponse = video.youtubeVideoFromJson(response.body);
         default:
           log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
           throw Exception(response.reasonPhrase);
@@ -190,13 +257,13 @@ class YoutubeSearchProvider extends ChangeNotifier {
     }
 
     return {
-      'videoViewCount': videoResponse.items[0].statistics.viewCount,
-      'videoLikeCount': videoResponse.items[0].statistics.likeCount,
-      'videoCommentCount': videoResponse.items[0].statistics.commentCount,
+      'videoViewCount': _videoResponse.items[0].statistics.viewCount,
+      'videoLikeCount': _videoResponse.items[0].statistics.likeCount,
+      'videoCommentCount': _videoResponse.items[0].statistics.commentCount,
     };
   }
 
-  Set<String> getEmail(String data) {
+  Set<String> _getEmail(String data) {
     Set<String> result = <String>{};
     String regexString = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@((?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)";
     RegExp regExp = RegExp(regexString);
@@ -207,4 +274,20 @@ class YoutubeSearchProvider extends ChangeNotifier {
     }
     return result;
   }
+}
+
+class FilterCriteria {
+  String titleContainedText;
+  String viewCountLowerBound;
+  String likeCountLowerBound;
+  String commentCountLowerBound;
+  bool mustContainsEmail;
+
+  FilterCriteria({
+    required this.titleContainedText,
+    required this.viewCountLowerBound,
+    required this.likeCountLowerBound,
+    required this.commentCountLowerBound,
+    required this.mustContainsEmail,
+  });
 }

@@ -19,15 +19,15 @@ class InstagramSearchProvider extends ChangeNotifier {
   String _searchText = '';
   List<Datum> _currentResults = [];
 
-  set input(String inputText) {
-    _searchText = inputText;
+  set searchText(String searchText) {
+    _searchText = searchText;
     // Notify listeners, in case the new catalog provides information
     // different from the previous one. For example, availability of an item
     // might have changed.
     notifyListeners();
   }
   
-  List<Datum> get results => searchResults.data;
+  List<Datum> get displayedData => searchResults.data;
 
   search() async {
     if (_searchText.isNotEmpty) {

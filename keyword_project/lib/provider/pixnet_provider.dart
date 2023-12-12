@@ -18,8 +18,8 @@ class PixnetSearchProvider extends ChangeNotifier {
   String _searchText = '';
   List<Feed> _currentResults = [];
 
-  set input(String inputText) {
-    _searchText = inputText;
+  set searchText(String searchText) {
+    _searchText = searchText;
     // Notify listeners, in case the new catalog provides information
     // different from the previous one. For example, availability of an item
     // might have changed.
@@ -27,9 +27,9 @@ class PixnetSearchProvider extends ChangeNotifier {
   }
 
   List<Feed> get originResults => searchResults.data.results;
-  List<Feed> get results => _currentResults;
+  List<Feed> get displayedData => _currentResults;
 
-  set results(List<Feed> inputList) {
+  set displayedData(List<Feed> inputList) {
     _currentResults = inputList;
     // Notify listeners, in case the new catalog provides information
     // different from the previous one. For example, availability of an item
