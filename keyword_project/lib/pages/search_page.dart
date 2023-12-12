@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:keyword_project/provider/result_table_provider.dart';
 import 'package:keyword_project/provider/youtube_provider.dart';
 
-import 'package:keyword_project/widgets/pixnet_filter.dart';
+import 'package:keyword_project/widgets/filter.dart';
 import 'package:keyword_project/widgets/export_dialog.dart';
 import 'package:keyword_project/widgets/search_bar.dart';
 import 'package:keyword_project/widgets/table_switcher.dart';
@@ -45,8 +45,8 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    var searchYoutube = context.read<YoutubeSearchProvider>();
-
+    var tableProvider = context.watch<ResultTableProvider>();
+    var youtubeProvider = context.watch<YoutubeSearchProvider>();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
@@ -95,35 +95,20 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                    child: SizedBox(
-                      height: 40,
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                        ),
-                        onPressed: () {searchYoutube.getOriginOder();}, 
-                        child: Text(
-                          '依相關度排序',
-                          style: Theme.of(context).textTheme.labelMedium,
-                        )
-                      ),
-                    ),
-                  ),
                   const Expanded(
-                    child: PixnetFilter()
+                    child: YouTubeFilter()
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: FilledButton.icon(
+                    child: FilledButton.tonalIcon(
                       onPressed: () => showDialog<String>(
                         context: context,
                         builder: (BuildContext context) => const MyExportDialog()
                       ),
-                      label: const Text('Export'),
+                      label: Text(
+                        '匯出',
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
                       icon: const Icon(
                         Icons.file_download,
                       ),
@@ -143,14 +128,44 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             child: Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16))
+                // borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16))
               ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
-                child: context.watch<ResultTableProvider>().selectedTable,
+                child: tableProvider.selectedTable,
               ),
             )
           ),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+            ),
+            child: youtubeProvider.originalData.isNotEmpty&&youtubeProvider.displayedData.length<11?
+            FilledButton.tonal(
+              child: Text(
+                '載入更多',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              onPressed: () => youtubeProvider.onLoadMore(),
+            ):Container(),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16))
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                '顯示${youtubeProvider.displayedData.length}筆/共${youtubeProvider.originalData.length}筆',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+            ),
+          )
         ]
       ),
     );

@@ -39,7 +39,7 @@ class _PostSearchBarState extends State<PostSearchBar> {
             resultTable.isLoading = true;
 
             log('Search Keyword: $value');
-            searchPixnet.input = searchInstagram.input = searchYoutube.input = value;
+            searchPixnet.searchText = searchInstagram.searchText = searchYoutube.searchText = value;
             await searchYoutube.search();
             resultTable.isLoading = false;
             // try {

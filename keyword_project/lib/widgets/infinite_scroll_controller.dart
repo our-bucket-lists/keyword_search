@@ -9,7 +9,6 @@ class InfiniteListenerController extends ScrollController {
 
   void _endListener() {
     if (position.pixels == position.maxScrollExtent) {
-      print('onLoadMore is going to be called');
       onLoadMore?.call();
     }
   }

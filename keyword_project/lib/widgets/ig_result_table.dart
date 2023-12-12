@@ -17,7 +17,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
   List<Datum>? filterData;
   int rowsPerPage = 10;
   int currentPage = 0;
-  int sortIndex = 0;
+  int sortedIndex = 0;
   List<bool> sortedColumn = [false, false, false, false, false, false];
   final List<double> _columnWidth = [120, 640, 160, 96, 96];
 
@@ -77,7 +77,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
     var searchInstagram = context.read<InstagramSearchProvider>();
 
     var isNoResult = context.select<InstagramSearchProvider, bool>(
-      (result) => searchInstagram.results.isEmpty
+      (result) => searchInstagram.displayedData.isEmpty
     );
 
     var getDataRow = context.select<InstagramSearchProvider, List<DataRow>>(
@@ -92,41 +92,41 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
           ]
         )
       ]: List<DataRow>.generate(
-          search.results.length,
+          search.displayedData.length,
           (index) => DataRow(
                 cells: [
                   DataCell(SizedBox(
                     width: _columnWidth[0]-40,
-                    child: Text(DateFormat('yyyy/MM/dd').format(search.results[index].timestamp)),
+                    child: Text(DateFormat('yyyy/MM/dd').format(search.displayedData[index].timestamp)),
                   )),
                   DataCell(
                     SizedBox(
                       width: _columnWidth[1]-2,
                       child: Text(
                         overflow: TextOverflow.ellipsis,
-                        search.results[index].caption.toString().replaceAll("\n", " "),
+                        search.displayedData[index].caption.toString().replaceAll("\n", " "),
                       ),
                     ),
-                    onTap: () => launchUrl(Uri.parse(search.results[index].permalink.toString())),
+                    onTap: () async => await launchUrl(Uri.parse(search.displayedData[index].permalink.toString())),
                   ),
                   DataCell(
                     SizedBox(
                         width: _columnWidth[2],
                         child: Tooltip(
-                          message: search.results[index].username,
+                          message: search.displayedData[index].username,
                           child: Text(
                               overflow: TextOverflow.ellipsis,
-                              search.results[index].username,),
+                              search.displayedData[index].username,),
                         )),
-                    onTap: () => launchUrl(Uri.https(site,search.results[index].username.toString())),),
+                    onTap: () async => await launchUrl(Uri.https(site,search.displayedData[index].username.toString())),),
                   DataCell(SizedBox(
                     width: _columnWidth[3],
-                    child: Text(overflow: TextOverflow.ellipsis,search.results[index].likeCount
+                    child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].likeCount
                         .toString()),
                   )),
                   DataCell(SizedBox(
                     width: _columnWidth[4],
-                    child: Text(overflow: TextOverflow.ellipsis,search.results[index].commentsCount
+                    child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].commentsCount
                         .toString()),
                   )),
                 ],
@@ -134,7 +134,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
               )),
     );
 
-    filterData = isNoResult? []:searchInstagram.results;
+    filterData = isNoResult? []:searchInstagram.displayedData;
 
     return SizedBox(
       width: double.infinity,
@@ -148,8 +148,8 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
 
             // Header
             showCheckboxColumn: true,
-            sortAscending: sortedColumn[sortIndex],
-            sortColumnIndex: sortIndex,
+            sortAscending: sortedColumn[sortedIndex],
+            sortColumnIndex: sortedIndex,
             columns: <DataColumn>[
               DataColumn(
                 label: const Text(
@@ -158,7 +158,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                 ),
                 onSort: (columnIndex, ascending) {
                   setState(() {
-                    sortIndex = columnIndex;
+                    sortedIndex = columnIndex;
                     sortedColumn[columnIndex] = ascending;
                   });
                   onSortColum(columnIndex, ascending);
@@ -171,7 +171,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                 ),
                 onSort: (columnIndex, ascending) {
                   setState(() {
-                    sortIndex = columnIndex;
+                    sortedIndex = columnIndex;
                     sortedColumn[columnIndex] = ascending;
                   });
                   onSortColum(columnIndex, ascending);
@@ -184,7 +184,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                 ),
                 onSort: (columnIndex, ascending) {
                   setState(() {
-                    sortIndex = columnIndex;
+                    sortedIndex = columnIndex;
                     sortedColumn[columnIndex] = ascending;
                   });
                   onSortColum(columnIndex, ascending);
@@ -197,7 +197,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                 ),
                 onSort: (columnIndex, ascending) {
                   setState(() {
-                    sortIndex = columnIndex;
+                    sortedIndex = columnIndex;
                     sortedColumn[columnIndex] = ascending;
                   });
                   onSortColum(columnIndex, ascending);
@@ -210,7 +210,7 @@ class _InstagramResultTableState extends State<InstagramResultTable> {
                 ),
                 onSort: (columnIndex, ascending) {
                   setState(() {
-                    sortIndex = columnIndex;
+                    sortedIndex = columnIndex;
                     sortedColumn[columnIndex] = ascending;
                   });
                   onSortColum(columnIndex, ascending);
