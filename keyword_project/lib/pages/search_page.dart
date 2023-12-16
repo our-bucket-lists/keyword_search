@@ -58,7 +58,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             child: Row(
               children: [
                 const CircleAvatar(
-                  backgroundImage: AssetImage('images/logo.jpeg'),
+                  backgroundImage: AssetImage('assets/images/logo.jpeg'),
                   radius: 24,
                 ),
                 const SizedBox(width: 8),
