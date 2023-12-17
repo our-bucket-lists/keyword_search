@@ -31,13 +31,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
   List<Item> _displayedData = [];
   
   // For data sorting and filtering
-  FilterCriteria filterCriteria = FilterCriteria(
-    titleContainedText: '', 
-    viewCountLowerBound: '0', 
-    likeCountLowerBound: '0', 
-    commentCountLowerBound: '0',
-    mustContainsEmail: false
-  );
+  FilterCriteria filterCriteria = FilterCriteria();
   List<bool> _isAscendingSortedColumn = List.generate(8, (index) => false);
   bool _isSortByRelevance = false;
   int _sortedColumnIndex = 0;
@@ -52,6 +46,10 @@ class YoutubeSearchProvider extends ChangeNotifier {
     _displayedData = [];
     _isAscendingSortedColumn = List.generate(8, (index) => false);
     _isSortByRelevance = true;
+  }
+  set isSortByRelevance(bool input) {
+    _isSortByRelevance = input;
+    
   }
 
   // Geter
@@ -117,7 +115,8 @@ class YoutubeSearchProvider extends ChangeNotifier {
       where((element) => int.parse(element.id.videoViewCount)>=int.parse(filterCriteria.viewCountLowerBound)).
       where((element) => int.parse(element.id.videoLikeCount)>=int.parse(filterCriteria.likeCountLowerBound)).
       where((element) => int.parse(element.id.videoCommentCount)>=int.parse(filterCriteria.commentCountLowerBound)).
-      where((element) => filterCriteria.mustContainsEmail?element.snippet.email.isNotEmpty:true).toList();
+      where((element) => filterCriteria.mustContainsEmail?element.snippet.email.isNotEmpty:true).
+      where((element) => filterCriteria.isSelected?element.isSelected:true).toList();
   }
 
   // Getting data via API
@@ -277,17 +276,10 @@ class YoutubeSearchProvider extends ChangeNotifier {
 }
 
 class FilterCriteria {
-  String titleContainedText;
-  String viewCountLowerBound;
-  String likeCountLowerBound;
-  String commentCountLowerBound;
-  bool mustContainsEmail;
-
-  FilterCriteria({
-    required this.titleContainedText,
-    required this.viewCountLowerBound,
-    required this.likeCountLowerBound,
-    required this.commentCountLowerBound,
-    required this.mustContainsEmail,
-  });
+  String titleContainedText = '';
+  String viewCountLowerBound = '0';
+  String likeCountLowerBound = '0';
+  String commentCountLowerBound = '0';
+  bool mustContainsEmail = false;
+  bool isSelected = false;
 }

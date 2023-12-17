@@ -7,7 +7,7 @@ import 'package:keyword_project/provider/youtube_provider.dart';
 import 'package:keyword_project/widgets/infinite_scroll_controller.dart';
 
 class YoutubeResultTable extends StatefulWidget {
-  const YoutubeResultTable({Key? key}) : super(key: key);
+  const YoutubeResultTable({super.key});
 
   @override
   State<YoutubeResultTable> createState() => _YoutubeResultTableState();
@@ -18,6 +18,7 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
   int currentPage = 0;
   late List<bool> sortedColumn;
   final List<double> _columnWidth = [120, 288, 64, 64, 64, 120, 64, 160];
+  Set<String> selectedItems = {};
 
   @override
   void initState() {
@@ -29,68 +30,85 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
   @override
   Widget build(BuildContext context) {
     
-    var searchYoutube = context.read<YoutubeSearchProvider>();
+    var searchYoutube = context.watch<YoutubeSearchProvider>();
     sortedColumn = searchYoutube.isAscendingSortedColumn;
     var getDataRow = context.select<YoutubeSearchProvider, List<DataRow>>(
-      (search) => List<DataRow>.generate(
-        search.displayedData.length, 
-        (index) => DataRow(
-          cells: [
-            DataCell(SizedBox(
-              width: _columnWidth[0]-40,
-              child: Text(DateFormat('yyyy/MM/dd').format(search.displayedData[index].snippet.publishTime)))),
-            DataCell(
-              SizedBox(
-                width: _columnWidth[1]-2,
-                child: Tooltip(
-                  message: search.displayedData[index].snippet.title,
-                  child: Text(
-                    overflow: TextOverflow.ellipsis,
-                    search.displayedData[index].snippet.title,
+      (search) {
+        // List<String> displayedDataVedioId = search.displayedData.map((e) => e.id.videoId).toList();
+        // isSelectedItemsMap.removeWhere((key, value)=>!displayedDataVedioId.contains(key));
+        return List<DataRow>.generate(
+          search.displayedData.length, 
+          (index) => DataRow(
+            cells: [
+              DataCell(SizedBox(
+                width: _columnWidth[0]-40,
+                child: Text(DateFormat('yyyy/MM/dd').format(search.displayedData[index].snippet.publishTime)))),
+              DataCell(
+                SizedBox(
+                  width: _columnWidth[1]-2,
+                  child: Tooltip(
+                    message: search.displayedData[index].snippet.title,
+                    child: Text(
+                      overflow: TextOverflow.ellipsis,
+                      search.displayedData[index].snippet.title,
+                    ),
                   ),
                 ),
+                onTap: () async => await launchUrl(Uri.https('www.youtube.com','/watch', {'v': search.displayedData[index].id.videoId})),
               ),
-              onTap: () async => await launchUrl(Uri.https('www.youtube.com','/watch', {'v': search.displayedData[index].id.videoId})),
-            ),
-            DataCell(SizedBox(
-              width: _columnWidth[2],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].id.videoViewCount))),
-            DataCell(SizedBox(
-              width: _columnWidth[3],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].id.videoLikeCount))),
-            DataCell(SizedBox(
-              width: _columnWidth[4],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].id.videoCommentCount))),
-            DataCell(
-              SizedBox(
-                width: _columnWidth[5],
-                child: Tooltip(
-                  message: search.displayedData[index].snippet.channelTitle,
-                  child: Text(
-                    overflow: TextOverflow.ellipsis,
-                    search.displayedData[index].snippet.channelTitle
-                  ),
-                )
+              DataCell(SizedBox(
+                width: _columnWidth[2],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].id.videoViewCount))),
+              DataCell(SizedBox(
+                width: _columnWidth[3],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].id.videoLikeCount))),
+              DataCell(SizedBox(
+                width: _columnWidth[4],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].id.videoCommentCount))),
+              DataCell(
+                SizedBox(
+                  width: _columnWidth[5],
+                  child: Tooltip(
+                    message: search.displayedData[index].snippet.channelTitle,
+                    child: Text(
+                      overflow: TextOverflow.ellipsis,
+                      search.displayedData[index].snippet.channelTitle
+                    ),
+                  )
+                ),
+                onTap: () async => await launchUrl(Uri.https('www.youtube.com','channel/${search.displayedData[index].snippet.channelId}')),
               ),
-              onTap: () async => await launchUrl(Uri.https('www.youtube.com','channel/${search.displayedData[index].snippet.channelId}')),
-            ),
-            DataCell(SizedBox(
-              width: _columnWidth[6],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].snippet.followerCount))),
-            DataCell(
-              SizedBox(
-                width: _columnWidth[7],
-                child: Tooltip(
-                  message: search.displayedData[index].snippet.email,
-                  child: Text(
-                    overflow: TextOverflow.ellipsis,
-                    search.displayedData[index].snippet.email.isNotEmpty?
-                    search.displayedData[index].snippet.email.split(',')[0]:''
+              DataCell(SizedBox(
+                width: _columnWidth[6],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].snippet.followerCount))),
+              DataCell(
+                SizedBox(
+                  width: _columnWidth[7],
+                  child: Tooltip(
+                    message: search.displayedData[index].snippet.email,
+                    child: Text(
+                      overflow: TextOverflow.ellipsis,
+                      search.displayedData[index].snippet.email.isNotEmpty?
+                      search.displayedData[index].snippet.email.split(',')[0]:''
+                    )
                   )
                 )
-              )
-            ),
-          ],
-          onSelectChanged: (bool? value) {
-          },
-        )
-      ),
+              ),
+            ],
+            selected: searchYoutube.displayedData[index].isSelected,
+            onSelectChanged: (bool? isSelected) {
+              switch (isSelected) {
+                case true:
+                  searchYoutube.displayedData[index].isSelected = true;
+                  setState(() {
+                    selectedItems.add(search.displayedData[index].id.videoId);
+                  });
+                default:
+                  searchYoutube.displayedData[index].isSelected = false;
+                  setState(() {
+                    selectedItems.remove(search.displayedData[index].id.videoId);
+                  });
+              } 
+            },
+          )
+        );
+      }
     );
     
     return SizedBox(
