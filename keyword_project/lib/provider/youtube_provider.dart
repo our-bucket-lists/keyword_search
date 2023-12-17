@@ -29,11 +29,12 @@ class YoutubeSearchProvider extends ChangeNotifier {
   // For Data storage
   final List<Item> _originalData = [];
   List<Item> _displayedData = [];
+  final Set<String> _selectedItems = {};
   
   // For data sorting and filtering
-  FilterCriteria filterCriteria = FilterCriteria();
+  final FilterCriteria _filterCriteria = FilterCriteria();
   List<bool> _isAscendingSortedColumn = List.generate(8, (index) => false);
-  bool _isSortByRelevance = false;
+  bool _isSortByRelevance = true; 
   int _sortedColumnIndex = 0;
   bool isLoadMoreDisplayed = false;
   
@@ -46,24 +47,53 @@ class YoutubeSearchProvider extends ChangeNotifier {
     _displayedData = [];
     _isAscendingSortedColumn = List.generate(8, (index) => false);
     _isSortByRelevance = true;
+    notifyListeners();
   }
   set isSortByRelevance(bool input) {
     _isSortByRelevance = input;
-    
+    notifyListeners();
+  }
+  set titleContainedText(String input) {
+    _filterCriteria.titleContainedText = input;
+    notifyListeners();
+  }
+  set viewCountLowerBound(String input) {
+    _filterCriteria.viewCountLowerBound = input;
+    notifyListeners();
+  }
+  set likeCountLowerBound(String input) {
+    _filterCriteria.likeCountLowerBound = input;
+    notifyListeners();
+  }
+  set commentCountLowerBound(String input) {
+    _filterCriteria.commentCountLowerBound = input;
+    notifyListeners();
+  }
+  set mustContainsEmail(bool input) {
+    _filterCriteria.mustContainsEmail = input;
+    notifyListeners();
+  }
+  set mustSelected(bool input) {
+    _filterCriteria.mustSelected = input;
+    notifyListeners();
   }
 
   // Geter
   List<Item> get originalData => _originalData;
   List<Item> get displayedData => _displayedData;
+  Set<String> get selectedItems => _selectedItems;
   List<bool> get isAscendingSortedColumn => _isAscendingSortedColumn;
   int get sortedColumnIndex => _sortedColumnIndex;
   bool get isSortByRelevance => _isSortByRelevance;
+  bool get mustContainsEmail => _filterCriteria.mustContainsEmail;
+  bool get mustSelected => _filterCriteria.mustSelected;
 
   // Dealing with the data to be displayed
   void onDisplayedDataSort (int columnIndex, bool isAscending) {
     _isSortByRelevance = false;
     _sortedColumnIndex = columnIndex;
     _isAscendingSortedColumn[_sortedColumnIndex] = isAscending;
+    notifyListeners();
     switch (_sortedColumnIndex) {
       case 0:
         _displayedData.sort((a, b) => _onCompare(isAscending, a.snippet.publishTime, b.snippet.publishTime));
@@ -97,8 +127,20 @@ class YoutubeSearchProvider extends ChangeNotifier {
   void onDisplayedDataSortByRelevance () {
     _isSortByRelevance = true;
     _isAscendingSortedColumn = List.generate(8, (index) => false);
+    notifyListeners();
     _displayedData = _onFilter(_originalData);
     notifyListeners();
+  }
+
+  void onSelectChanged(bool? isSelected, String id) {
+    switch (isSelected) {
+      case true:
+        _selectedItems.add(id);
+      default:
+        _selectedItems.remove(id);
+    } 
+    notifyListeners();
+    onDisplayedDataFilterSort();
   }
 
   int _onCompare(bool isAscending, var a, var b) {
@@ -111,12 +153,12 @@ class YoutubeSearchProvider extends ChangeNotifier {
 
   List<Item> _onFilter (List<Item> inputList) {
     return inputList.
-      where((element) => element.snippet.title.toLowerCase().contains(filterCriteria.titleContainedText.toLowerCase())).
-      where((element) => int.parse(element.id.videoViewCount)>=int.parse(filterCriteria.viewCountLowerBound)).
-      where((element) => int.parse(element.id.videoLikeCount)>=int.parse(filterCriteria.likeCountLowerBound)).
-      where((element) => int.parse(element.id.videoCommentCount)>=int.parse(filterCriteria.commentCountLowerBound)).
-      where((element) => filterCriteria.mustContainsEmail?element.snippet.email.isNotEmpty:true).
-      where((element) => filterCriteria.isSelected?element.isSelected:true).toList();
+      where((element) => element.snippet.title.toLowerCase().contains(_filterCriteria.titleContainedText.toLowerCase())).
+      where((element) => int.parse(element.id.videoViewCount)>=int.parse(_filterCriteria.viewCountLowerBound)).
+      where((element) => int.parse(element.id.videoLikeCount)>=int.parse(_filterCriteria.likeCountLowerBound)).
+      where((element) => int.parse(element.id.videoCommentCount)>=int.parse(_filterCriteria.commentCountLowerBound)).
+      where((element) => _filterCriteria.mustContainsEmail?element.snippet.email.isNotEmpty:true).
+      where((element) => _filterCriteria.mustSelected?_selectedItems.contains(element.id.videoId):true).toList();
   }
 
   // Getting data via API
@@ -281,5 +323,5 @@ class FilterCriteria {
   String likeCountLowerBound = '0';
   String commentCountLowerBound = '0';
   bool mustContainsEmail = false;
-  bool isSelected = false;
+  bool mustSelected = false;
 }

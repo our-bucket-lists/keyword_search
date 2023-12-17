@@ -35,7 +35,6 @@ class YoutubeSearch {
 class Item {
     Id id;
     Snippet snippet;
-    bool isSelected = false;
 
     Item({
         required this.id,

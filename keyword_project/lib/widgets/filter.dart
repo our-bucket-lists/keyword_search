@@ -30,6 +30,15 @@ class _YouTubeFilterState extends State<YouTubeFilter> {
   final commentCountFilterController = TextEditingController();
 
   @override
+  void dispose() {
+    titleFilterController.dispose();
+    viewCountFilterController.dispose();
+    likeCountFilterController.dispose();
+    commentCountFilterController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     var searchProvider = context.watch<YoutubeSearchProvider>();
     
@@ -45,16 +54,17 @@ class _YouTubeFilterState extends State<YouTubeFilter> {
               icon: const Icon(Icons.restart_alt_outlined, size: 16,),
               tooltip: '重置篩選設定',
               onPressed: () {
-                searchProvider.filterCriteria.isSelected = false;
-                searchProvider.filterCriteria.mustContainsEmail = false;
+                searchProvider.isSortByRelevance = true;
+                searchProvider.mustSelected = false;
+                searchProvider.mustContainsEmail = false;
                 titleFilterController.clear();
-                searchProvider.filterCriteria.titleContainedText = '';
+                searchProvider.titleContainedText = '';
                 viewCountFilterController.clear();
-                searchProvider.filterCriteria.viewCountLowerBound = '0';
+                searchProvider.viewCountLowerBound = '0';
                 likeCountFilterController.clear();
-                searchProvider.filterCriteria.likeCountLowerBound = '0';
+                searchProvider.likeCountLowerBound = '0';
                 commentCountFilterController.clear();
-                searchProvider.filterCriteria.commentCountLowerBound = '0';
+                searchProvider.commentCountLowerBound = '0';
                 searchProvider.onDisplayedDataFilterSort();
               },
             ),
@@ -66,17 +76,17 @@ class _YouTubeFilterState extends State<YouTubeFilter> {
           ),
           MyFilterChip(
             hitText: '有Email', 
-            selected: searchProvider.filterCriteria.mustContainsEmail, 
+            selected: searchProvider.mustContainsEmail, 
             onSelected: (bool selected) {
-              searchProvider.filterCriteria.mustContainsEmail = selected;
+              searchProvider.mustContainsEmail = selected;
               searchProvider.onDisplayedDataFilterSort();
             }
           ),
           MyFilterChip(
             hitText: '已選取', 
-            selected: searchProvider.filterCriteria.isSelected, 
+            selected: searchProvider.mustSelected, 
             onSelected: (bool selected) {
-              searchProvider.filterCriteria.isSelected = selected;
+              searchProvider.mustSelected = selected;
               searchProvider.onDisplayedDataFilterSort();
             }
           ),
@@ -86,9 +96,9 @@ class _YouTubeFilterState extends State<YouTubeFilter> {
             width: 200,
             onSubmitted: (String text) {
               if (text.isNotEmpty) {
-                searchProvider.filterCriteria.titleContainedText = text;
+                searchProvider.titleContainedText = text;
               } else {
-                searchProvider.filterCriteria.titleContainedText = '';
+                searchProvider.titleContainedText = '';
               }
               searchProvider.onDisplayedDataFilterSort();
             },
@@ -99,9 +109,9 @@ class _YouTubeFilterState extends State<YouTubeFilter> {
             width:104,
             onSubmitted: (String text) {
               if (text.isNotEmpty && isNumeric(text)) {
-                searchProvider.filterCriteria.viewCountLowerBound = text;
+                searchProvider.viewCountLowerBound = text;
               } else {
-                searchProvider.filterCriteria.viewCountLowerBound = '0';
+                searchProvider.viewCountLowerBound = '0';
               }
               searchProvider.onDisplayedDataFilterSort();
             },
@@ -112,9 +122,9 @@ class _YouTubeFilterState extends State<YouTubeFilter> {
             width: 88,
             onSubmitted: (String text) {
               if (text.isNotEmpty && isNumeric(text)) {
-                searchProvider.filterCriteria.likeCountLowerBound = text;
+                searchProvider.likeCountLowerBound = text;
               } else {
-                searchProvider.filterCriteria.likeCountLowerBound = '0';
+                searchProvider.likeCountLowerBound = '0';
               }
               searchProvider.onDisplayedDataFilterSort();
             },
@@ -125,9 +135,9 @@ class _YouTubeFilterState extends State<YouTubeFilter> {
             width: 88,
             onSubmitted: (String text) {
               if (text.isNotEmpty && isNumeric(text)) {
-                searchProvider.filterCriteria.commentCountLowerBound = text;
+                searchProvider.commentCountLowerBound = text;
               } else {
-                searchProvider.filterCriteria.commentCountLowerBound = '0';
+                searchProvider.commentCountLowerBound = '0';
               }
               searchProvider.onDisplayedDataFilterSort();
             },

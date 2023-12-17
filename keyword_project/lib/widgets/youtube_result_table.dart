@@ -18,24 +18,22 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
   int currentPage = 0;
   late List<bool> sortedColumn;
   final List<double> _columnWidth = [120, 288, 64, 64, 64, 120, 64, 160];
-  Set<String> selectedItems = {};
 
   @override
   void initState() {
     super.initState();
   }
 
+  
+
   TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    
     var searchYoutube = context.watch<YoutubeSearchProvider>();
     sortedColumn = searchYoutube.isAscendingSortedColumn;
     var getDataRow = context.select<YoutubeSearchProvider, List<DataRow>>(
       (search) {
-        // List<String> displayedDataVedioId = search.displayedData.map((e) => e.id.videoId).toList();
-        // isSelectedItemsMap.removeWhere((key, value)=>!displayedDataVedioId.contains(key));
         return List<DataRow>.generate(
           search.displayedData.length, 
           (index) => DataRow(
@@ -91,21 +89,9 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
                 )
               ),
             ],
-            selected: searchYoutube.displayedData[index].isSelected,
-            onSelectChanged: (bool? isSelected) {
-              switch (isSelected) {
-                case true:
-                  searchYoutube.displayedData[index].isSelected = true;
-                  setState(() {
-                    selectedItems.add(search.displayedData[index].id.videoId);
-                  });
-                default:
-                  searchYoutube.displayedData[index].isSelected = false;
-                  setState(() {
-                    selectedItems.remove(search.displayedData[index].id.videoId);
-                  });
-              } 
-            },
+            selected: searchYoutube.selectedItems.contains(searchYoutube.displayedData[index].id.videoId),
+            onSelectChanged: (bool? isSelected) => 
+              searchYoutube.onSelectChanged(isSelected, searchYoutube.displayedData[index].id.videoId),
           )
         );
       }
