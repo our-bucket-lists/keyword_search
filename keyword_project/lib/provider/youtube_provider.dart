@@ -1,7 +1,9 @@
 import 'dart:developer';
 
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 import 'package:keyword_project/modles/youtube_search_model.dart';
 import 'package:keyword_project/modles/youtube_channel_model.dart' as channel;
@@ -27,19 +29,15 @@ class YoutubeSearchProvider extends ChangeNotifier {
   video.YoutubeVideo _videoResponse = video.YoutubeVideo(items: []);
   
   // For Data storage
-  final List<Item> _originalData = [];
-  List<Item> _displayedData = [];
+  final _originalData = <Item>[];
+  var _displayedData = <Item>[];
+  final  _selectedItems = <String>{};
+  final  selectedColumns = <String>{'發布日期', '影片標題', '影片連結', '觀看數', '喜歡數', '留言數', '頻道名稱', '頻道連結', '訂閱數', 'Email'};
   
   // For data sorting and filtering
-  FilterCriteria filterCriteria = FilterCriteria(
-    titleContainedText: '', 
-    viewCountLowerBound: '0', 
-    likeCountLowerBound: '0', 
-    commentCountLowerBound: '0',
-    mustContainsEmail: false
-  );
+  final FilterCriteria _filterCriteria = FilterCriteria();
   List<bool> _isAscendingSortedColumn = List.generate(8, (index) => false);
-  bool _isSortByRelevance = false;
+  bool _isSortByRelevance = true; 
   int _sortedColumnIndex = 0;
   bool isLoadMoreDisplayed = false;
   
@@ -52,20 +50,125 @@ class YoutubeSearchProvider extends ChangeNotifier {
     _displayedData = [];
     _isAscendingSortedColumn = List.generate(8, (index) => false);
     _isSortByRelevance = true;
+    notifyListeners();
+  }
+  set isSortByRelevance(bool input) {
+    _isSortByRelevance = input;
+    notifyListeners();
+  }
+  set titleContainedText(String input) {
+    _filterCriteria.titleContainedText = input;
+    notifyListeners();
+  }
+  set viewCountLowerBound(String input) {
+    _filterCriteria.viewCountLowerBound = input;
+    notifyListeners();
+  }
+  set likeCountLowerBound(String input) {
+    _filterCriteria.likeCountLowerBound = input;
+    notifyListeners();
+  }
+  set commentCountLowerBound(String input) {
+    _filterCriteria.commentCountLowerBound = input;
+    notifyListeners();
+  }
+  set mustContainsEmail(bool input) {
+    _filterCriteria.mustContainsEmail = input;
+    notifyListeners();
+  }
+  set mustSelected(bool input) {
+    _filterCriteria.mustSelected = input;
+    notifyListeners();
   }
 
   // Geter
+  String get searchText => _searchText;
   List<Item> get originalData => _originalData;
   List<Item> get displayedData => _displayedData;
+  Set<String> get selectedItems => _selectedItems;
   List<bool> get isAscendingSortedColumn => _isAscendingSortedColumn;
   int get sortedColumnIndex => _sortedColumnIndex;
   bool get isSortByRelevance => _isSortByRelevance;
+  bool get mustContainsEmail => _filterCriteria.mustContainsEmail;
+  bool get mustSelected => _filterCriteria.mustSelected;
+  String get exportCsv {
+    List<String> header = [];
+    if(selectedColumns.contains("發布日期")) {
+      header.add("發布日期");
+    }
+    if(selectedColumns.contains("影片標題")) {
+      header.add("影片標題");
+    }
+    if(selectedColumns.contains("影片連結")) {
+      header.add("影片連結");
+    }
+    if(selectedColumns.contains("觀看數")) {
+      header.add("觀看數");
+    }
+    if(selectedColumns.contains("喜歡數")) {
+      header.add("喜歡數");
+    }
+    if(selectedColumns.contains("留言數")) {
+      header.add("留言數");
+    }
+    if(selectedColumns.contains("頻道名稱")) {
+      header.add("頻道名稱");
+    }
+    if(selectedColumns.contains("頻道連結")) {
+      header.add("頻道連結");
+    }
+    if(selectedColumns.contains("訂閱數")) {
+      header.add("訂閱數");
+    }
+    if(selectedColumns.contains("Email")) {
+      header.add("Email");
+    }
+
+    return const ListToCsvConverter().convert(
+      [header, ..._originalData.where((element) => _selectedItems.contains(element.id.videoId)).map((e) {
+        List<String> item = [];
+        if(selectedColumns.contains("發布日期")) {
+          item.add(DateFormat('yyyy/MM/dd').format(e.snippet.publishTime));
+        }
+        if(selectedColumns.contains("影片標題")) {
+          item.add(e.snippet.title);
+        }
+        if(selectedColumns.contains("影片連結")) {
+          item.add(Uri.https('www.youtube.com','/watch', {'v': e.id.videoId}).toString());
+        }
+        if(selectedColumns.contains("觀看數")) {
+          item.add(e.id.videoViewCount);
+        }
+        if(selectedColumns.contains("喜歡數")) {
+          item.add(e.id.videoLikeCount);
+        }
+        if(selectedColumns.contains("留言數")) {
+          item.add(e.id.videoCommentCount);
+        }
+        if(selectedColumns.contains("頻道名稱")) {
+          item.add(e.snippet.channelTitle);
+        }
+        if(selectedColumns.contains("頻道連結")) {
+          item.add(Uri.https('www.youtube.com','channel/${e.snippet.channelId}').toString());
+        }
+        if(selectedColumns.contains("訂閱數")) {
+          item.add(e.snippet.followerCount);
+        }
+        if(selectedColumns.contains("Email")) {
+          item.add(e.snippet.email);
+        }
+        return item;
+      })]
+      
+    );
+  }
 
   // Dealing with the data to be displayed
   void onDisplayedDataSort (int columnIndex, bool isAscending) {
     _isSortByRelevance = false;
     _sortedColumnIndex = columnIndex;
     _isAscendingSortedColumn[_sortedColumnIndex] = isAscending;
+    notifyListeners();
     switch (_sortedColumnIndex) {
       case 0:
         _displayedData.sort((a, b) => _onCompare(isAscending, a.snippet.publishTime, b.snippet.publishTime));
@@ -99,8 +202,20 @@ class YoutubeSearchProvider extends ChangeNotifier {
   void onDisplayedDataSortByRelevance () {
     _isSortByRelevance = true;
     _isAscendingSortedColumn = List.generate(8, (index) => false);
+    notifyListeners();
     _displayedData = _onFilter(_originalData);
     notifyListeners();
+  }
+
+  void onSelectChanged(bool? isSelected, Item item) {
+    switch (isSelected) {
+      case true:
+        _selectedItems.add(item.id.videoId);
+      default:
+        _selectedItems.remove(item.id.videoId);
+    } 
+    notifyListeners();
+    onDisplayedDataFilterSort();
   }
 
   int _onCompare(bool isAscending, var a, var b) {
@@ -113,11 +228,12 @@ class YoutubeSearchProvider extends ChangeNotifier {
 
   List<Item> _onFilter (List<Item> inputList) {
     return inputList.
-      where((element) => element.snippet.title.toLowerCase().contains(filterCriteria.titleContainedText.toLowerCase())).
-      where((element) => int.parse(element.id.videoViewCount)>=int.parse(filterCriteria.viewCountLowerBound)).
-      where((element) => int.parse(element.id.videoLikeCount)>=int.parse(filterCriteria.likeCountLowerBound)).
-      where((element) => int.parse(element.id.videoCommentCount)>=int.parse(filterCriteria.commentCountLowerBound)).
-      where((element) => filterCriteria.mustContainsEmail?element.snippet.email.isNotEmpty:true).toList();
+      where((element) => element.snippet.title.toLowerCase().contains(_filterCriteria.titleContainedText.toLowerCase())).
+      where((element) => int.parse(element.id.videoViewCount)>=int.parse(_filterCriteria.viewCountLowerBound)).
+      where((element) => int.parse(element.id.videoLikeCount)>=int.parse(_filterCriteria.likeCountLowerBound)).
+      where((element) => int.parse(element.id.videoCommentCount)>=int.parse(_filterCriteria.commentCountLowerBound)).
+      where((element) => _filterCriteria.mustContainsEmail?element.snippet.email.isNotEmpty:true).
+      where((element) => _filterCriteria.mustSelected?_selectedItems.contains(element.id.videoId):true).toList();
   }
 
   // Getting data via API
@@ -277,17 +393,10 @@ class YoutubeSearchProvider extends ChangeNotifier {
 }
 
 class FilterCriteria {
-  String titleContainedText;
-  String viewCountLowerBound;
-  String likeCountLowerBound;
-  String commentCountLowerBound;
-  bool mustContainsEmail;
-
-  FilterCriteria({
-    required this.titleContainedText,
-    required this.viewCountLowerBound,
-    required this.likeCountLowerBound,
-    required this.commentCountLowerBound,
-    required this.mustContainsEmail,
-  });
+  String titleContainedText = '';
+  String viewCountLowerBound = '0';
+  String likeCountLowerBound = '0';
+  String commentCountLowerBound = '0';
+  bool mustContainsEmail = false;
+  bool mustSelected = false;
 }
