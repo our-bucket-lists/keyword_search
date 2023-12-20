@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class MyExportDialog extends StatefulWidget {
-  const MyExportDialog({super.key});
+class MyExportDialog extends StatelessWidget {
+  final Function() onSubmitted;
+  final Set<String> selectedColumns;
 
-  @override
-  State<MyExportDialog> createState() => _MyExportDialogState();
-}
-
-class _MyExportDialogState extends State<MyExportDialog> {
-  bool isChecked = false;
-
+  const MyExportDialog({
+    super.key, 
+    required this.onSubmitted, 
+    required this.selectedColumns,
+  });
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('輸出欄位'),
+      title: const Text('YouTube 輸出欄位'),
       content: Table(
         border: TableBorder.all(
           //color: Colors.white,
@@ -24,21 +22,27 @@ class _MyExportDialogState extends State<MyExportDialog> {
           0: IntrinsicColumnWidth(),
           1: IntrinsicColumnWidth(),
           2: IntrinsicColumnWidth(),
+          3: IntrinsicColumnWidth(),
+          4: IntrinsicColumnWidth(),
         },
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-        children: const <TableRow>[
+        children: <TableRow>[
           TableRow(
             children: <Widget>[
-              ExportOption(text: "創作者",),
-              ExportOption(text: "首頁連結",),
-              ExportOption(text: "發文連結",),
-            ],
-          ),
-          TableRow(
+              ExportOption(text: "發布日期", selectedColumns: selectedColumns,),
+              ExportOption(text: "影片標題", selectedColumns: selectedColumns,),
+              ExportOption(text: "影片連結", selectedColumns: selectedColumns,),
+              ExportOption(text: "觀看數", selectedColumns: selectedColumns,),
+              ExportOption(text: "喜歡數", selectedColumns: selectedColumns,),
+            ] 
+          ), 
+          TableRow( 
             children: <Widget>[
-              ExportOption(text: "發布日期",),
-              ExportOption(text: "Email",),
-              ExportOption(text: "觀看數",),
+              ExportOption(text: "留言數", selectedColumns: selectedColumns,),
+              ExportOption(text: "頻道名稱", selectedColumns: selectedColumns,),
+              ExportOption(text: "頻道連結", selectedColumns: selectedColumns,),
+              ExportOption(text: "訂閱數", selectedColumns: selectedColumns,),
+              ExportOption(text: "Email", selectedColumns: selectedColumns,),
             ],
           ),
         ],
@@ -46,16 +50,13 @@ class _MyExportDialogState extends State<MyExportDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () {
-            Navigator.pop(context, 'Cancel');
+            Navigator.pop(context);
           },
-          child: const Text('Cancel'),
+          child: const Text('取消'),
         ),
         TextButton(
-          onPressed: () {
-            launchUrl(Uri.parse('https://docs.google.com/spreadsheets/d/1Ei7GkAdD0AYoC7YO3GduFMGwjzq49wGnFuPMXUSAlkA/export?format=csv&id=1Ei7GkAdD0AYoC7YO3GduFMGwjzq49wGnFuPMXUSAlkA&gid=0'));
-            Navigator.pop(context, 'OK');
-          }, 
-          child: const Text('OK'),
+          onPressed: onSubmitted, 
+          child: const Text('匯出'),
         ),
       ],
     );
@@ -63,16 +64,21 @@ class _MyExportDialogState extends State<MyExportDialog> {
 }
 
 class ExportOption extends StatefulWidget {
-  const ExportOption({super.key, required this.text});
   final String text;
+  final Set<String> selectedColumns;
+
+  const ExportOption({
+    super.key, 
+    required this.text, 
+    required this.selectedColumns
+  });
 
   @override
-  State<ExportOption> createState() => _ExportOption();
+  State<ExportOption> createState() => _ExportOptionState();
 }
 
-class _ExportOption extends State<ExportOption> {
-  bool _isChecked = false;
-  
+class _ExportOptionState extends State<ExportOption> {
+  bool _isSelected = true;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -80,10 +86,18 @@ class _ExportOption extends State<ExportOption> {
       child: Row(
         children: [
           Checkbox(
-            value: _isChecked,
-            onChanged: (bool? value){
+            value: _isSelected,
+            onChanged: (bool? value) {
+              switch (value) {
+                case true:
+                  widget.selectedColumns.add(widget.text);
+                  break;
+                default:
+                  widget.selectedColumns.remove(widget.text);
+                  break;
+              }
               setState(() {
-                _isChecked = value!;
+                _isSelected = widget.selectedColumns.contains(widget.text);
               });
             },
           ), 
@@ -92,5 +106,4 @@ class _ExportOption extends State<ExportOption> {
       ),
     );
   }
-  
 }

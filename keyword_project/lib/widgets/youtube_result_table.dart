@@ -91,7 +91,7 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
             ],
             selected: searchYoutube.selectedItems.contains(searchYoutube.displayedData[index].id.videoId),
             onSelectChanged: (bool? isSelected) => 
-              searchYoutube.onSelectChanged(isSelected, searchYoutube.displayedData[index].id.videoId),
+              searchYoutube.onSelectChanged(isSelected, searchYoutube.displayedData[index]),
           )
         );
       }

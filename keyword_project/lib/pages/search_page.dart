@@ -1,10 +1,10 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:csv/csv.dart';
 import 'package:file_saver/file_saver.dart';
 
 import 'package:keyword_project/provider/youtube_provider.dart';
@@ -81,22 +81,14 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  String csv = const ListToCsvConverter().convert(
-    [
-      ["Column1", "Column2"],
-      ["Column1", "Column2"],
-      ["Column1", "Column2"],
-    ],
-  );
-
   // Download and save CSV to your Device
-  downloadCSV(String file) async {
+  downloadCSV(String file, String fileNmae) async {
     // Convert your CSV string to a Uint8List for downloading.
     Uint8List bytes = Uint8List.fromList(utf8.encode(file));
 
     // This will download the file on the device.
     await FileSaver.instance.saveFile(
-      name: 'document_name', // you can give the CSV file name here.
+      name: fileNmae, // you can give the CSV file name here.
       bytes: bytes,
       ext: 'csv',
       mimeType: MimeType.csv,
@@ -210,14 +202,17 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: FilledButton.tonalIcon(
-                      // onPressed: () => showDialog<String>(
-                      //   context: context,
-                      //   builder: (BuildContext context) => const MyExportDialog()
-                      // ),
-                      onPressed: () async {
-                        //When the download button is pressed, call `downloadCSV` function and pass the CSV string in it.
-                        await downloadCSV(csv);
-                      },
+                      onPressed: () => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => MyExportDialog(
+                          selectedColumns: youtubeProvider.selectedColumns,
+                          onSubmitted: () async {
+                            log(youtubeProvider.selectedColumns.toString());
+                            Navigator.pop(context);
+                            await downloadCSV(youtubeProvider.exportCsv, 'YouTube_${youtubeProvider.searchText}_${DateFormat('yyMMddhhmmss').format(DateTime.now())}');
+                          },
+                        )
+                      ),
                       label: Text(
                         '匯出',
                         style: Theme.of(context).textTheme.labelMedium,
@@ -274,7 +269,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                '顯示${youtubeProvider.displayedData.length}筆/共${youtubeProvider.originalData.length}筆',
+                '顯示${youtubeProvider.displayedData.length}筆/載入${youtubeProvider.originalData.length}筆',
                 style: Theme.of(context).textTheme.labelMedium,
               ),
             ),

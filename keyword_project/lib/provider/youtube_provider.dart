@@ -1,7 +1,9 @@
 import 'dart:developer';
 
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 import 'package:keyword_project/modles/youtube_search_model.dart';
 import 'package:keyword_project/modles/youtube_channel_model.dart' as channel;
@@ -27,9 +29,10 @@ class YoutubeSearchProvider extends ChangeNotifier {
   video.YoutubeVideo _videoResponse = video.YoutubeVideo(items: []);
   
   // For Data storage
-  final List<Item> _originalData = [];
-  List<Item> _displayedData = [];
-  final Set<String> _selectedItems = {};
+  final _originalData = <Item>[];
+  var _displayedData = <Item>[];
+  final  _selectedItems = <String>{};
+  final  selectedColumns = <String>{'發布日期', '影片標題', '影片連結', '觀看數', '喜歡數', '留言數', '頻道名稱', '頻道連結', '訂閱數', 'Email'};
   
   // For data sorting and filtering
   final FilterCriteria _filterCriteria = FilterCriteria();
@@ -79,6 +82,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
   }
 
   // Geter
+  String get searchText => _searchText;
   List<Item> get originalData => _originalData;
   List<Item> get displayedData => _displayedData;
   Set<String> get selectedItems => _selectedItems;
@@ -87,6 +91,77 @@ class YoutubeSearchProvider extends ChangeNotifier {
   bool get isSortByRelevance => _isSortByRelevance;
   bool get mustContainsEmail => _filterCriteria.mustContainsEmail;
   bool get mustSelected => _filterCriteria.mustSelected;
+  String get exportCsv {
+    List<String> header = [];
+    if(selectedColumns.contains("發布日期")) {
+      header.add("發布日期");
+    }
+    if(selectedColumns.contains("影片標題")) {
+      header.add("影片標題");
+    }
+    if(selectedColumns.contains("影片連結")) {
+      header.add("影片連結");
+    }
+    if(selectedColumns.contains("觀看數")) {
+      header.add("觀看數");
+    }
+    if(selectedColumns.contains("喜歡數")) {
+      header.add("喜歡數");
+    }
+    if(selectedColumns.contains("留言數")) {
+      header.add("留言數");
+    }
+    if(selectedColumns.contains("頻道名稱")) {
+      header.add("頻道名稱");
+    }
+    if(selectedColumns.contains("頻道連結")) {
+      header.add("頻道連結");
+    }
+    if(selectedColumns.contains("訂閱數")) {
+      header.add("訂閱數");
+    }
+    if(selectedColumns.contains("Email")) {
+      header.add("Email");
+    }
+
+    return const ListToCsvConverter().convert(
+      [header, ..._originalData.where((element) => _selectedItems.contains(element.id.videoId)).map((e) {
+        List<String> item = [];
+        if(selectedColumns.contains("發布日期")) {
+          item.add(DateFormat('yyyy/MM/dd').format(e.snippet.publishTime));
+        }
+        if(selectedColumns.contains("影片標題")) {
+          item.add(e.snippet.title);
+        }
+        if(selectedColumns.contains("影片連結")) {
+          item.add(Uri.https('www.youtube.com','/watch', {'v': e.id.videoId}).toString());
+        }
+        if(selectedColumns.contains("觀看數")) {
+          item.add(e.id.videoViewCount);
+        }
+        if(selectedColumns.contains("喜歡數")) {
+          item.add(e.id.videoLikeCount);
+        }
+        if(selectedColumns.contains("留言數")) {
+          item.add(e.id.videoCommentCount);
+        }
+        if(selectedColumns.contains("頻道名稱")) {
+          item.add(e.snippet.channelTitle);
+        }
+        if(selectedColumns.contains("頻道連結")) {
+          item.add(Uri.https('www.youtube.com','channel/${e.snippet.channelId}').toString());
+        }
+        if(selectedColumns.contains("訂閱數")) {
+          item.add(e.snippet.followerCount);
+        }
+        if(selectedColumns.contains("Email")) {
+          item.add(e.snippet.email);
+        }
+        return item;
+      })]
+      
+    );
+  }
 
   // Dealing with the data to be displayed
   void onDisplayedDataSort (int columnIndex, bool isAscending) {
@@ -132,12 +207,12 @@ class YoutubeSearchProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void onSelectChanged(bool? isSelected, String id) {
+  void onSelectChanged(bool? isSelected, Item item) {
     switch (isSelected) {
       case true:
-        _selectedItems.add(id);
+        _selectedItems.add(item.id.videoId);
       default:
-        _selectedItems.remove(id);
+        _selectedItems.remove(item.id.videoId);
     } 
     notifyListeners();
     onDisplayedDataFilterSort();
