@@ -175,8 +175,8 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                     child: SegmentedButton<Platforms>(
                       segments: const <ButtonSegment<Platforms>>[
                         ButtonSegment<Platforms>(value: Platforms.youtube, label: Text('YouTube')),
-                        ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
-                        ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
+                        // ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
+                        // ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
                       ],
                       selected: _selectedPlatform,
                       onSelectionChanged: (Set<Platforms> newSelection) {
