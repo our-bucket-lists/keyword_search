@@ -1,16 +1,25 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'dart:developer';
 
-import 'package:keyword_project/provider/result_table_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:file_saver/file_saver.dart';
+
 import 'package:keyword_project/provider/youtube_provider.dart';
+import 'package:keyword_project/provider/ig_provider.dart';
+import 'package:keyword_project/provider/pixnet_provider.dart';
 
 import 'package:keyword_project/widgets/filter.dart';
 import 'package:keyword_project/widgets/export_dialog.dart';
 import 'package:keyword_project/widgets/search_bar.dart';
-import 'package:keyword_project/widgets/table_switcher.dart';
+import 'package:keyword_project/widgets/ig_result_table.dart';
+import 'package:keyword_project/widgets/pixnet_result_table.dart';
+import 'package:keyword_project/widgets/youtube_result_table.dart';
 
 
-
+enum Platforms { pixnet, youtube, instagram }
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -22,6 +31,35 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
   late AnimationController controller;
   bool determinate = false;
+  Set<Platforms> _selectedPlatform = <Platforms>{Platforms.youtube};
+  bool _isLoading = false;
+  Set<String> youtubeSelectedItems = {};
+
+  Widget _getSelectedFilter() {
+    switch (_selectedPlatform.elementAt(0)) {
+      case Platforms.pixnet:
+        return const PixnetFilter();
+      case Platforms.instagram:
+        return Container();
+      case Platforms.youtube:
+        return const YouTubeFilter();
+      default:
+        return const YouTubeFilter();
+    }
+  }
+
+  Widget _getSelectedTable() {
+    switch (_selectedPlatform.elementAt(0)) {
+      case Platforms.pixnet:
+        return const PixnetResultTable();
+      case Platforms.instagram:
+        return const InstagramResultTable();
+      case Platforms.youtube:
+        return const YoutubeResultTable();
+      default:
+        return const YoutubeResultTable();
+    }
+  }
   
   @override
   void initState() {
@@ -43,9 +81,24 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // Download and save CSV to your Device
+  downloadCSV(String file, String fileNmae) async {
+    // Convert your CSV string to a Uint8List for downloading.
+    Uint8List bytes = Uint8List.fromList(utf8.encode(file));
+
+    // This will download the file on the device.
+    await FileSaver.instance.saveFile(
+      name: fileNmae, // you can give the CSV file name here.
+      bytes: bytes,
+      ext: 'csv',
+      mimeType: MimeType.csv,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    var tableProvider = context.watch<ResultTableProvider>();
+    var pixnetProvider = context.read<PixnetSearchProvider>();
+    var instagramProvider = context.read<InstagramSearchProvider>();
     var youtubeProvider = context.watch<YoutubeSearchProvider>();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -67,15 +120,46 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                   style: Theme.of(context).textTheme.headlineLarge,
                 ),
                 const SizedBox(width: 128),
-                const SizedBox(
+                SizedBox(
                   width: 640,
-                  child: PostSearchBar(),
+                  child: PostSearchBar(
+                    onSubmitted: (value) async {
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      log('Search Keyword: $value');
+                      pixnetProvider.searchText = instagramProvider.searchText = youtubeProvider.searchText = value;
+                      await youtubeProvider.search();
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      // try {
+                      //   pixnetProvider.search();
+                      // } catch (_) {
+                      //   rethrow;
+                      // } finally {
+                      //   try {
+                      //     instagramProvider.search();
+                      //   } catch (_) {
+                      //     rethrow;
+                      //   } finally {
+                      //     try {
+                      //       youtubeProvider.search();
+                      //     } catch (_) {
+                      //       rethrow;
+                      //     } finally {
+                      //       resultTable.isLoading = false;
+                      //     }
+                      //   }
+                      // }
+                    },
+                  ),
                 ),
                 Expanded(child: Container(),),
               ],
             ),
           ),
-          // Table Switch & Filter
+          // Table Switch & Filter & Export
           Container(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
@@ -86,7 +170,24 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
-                  const TableSwitch(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                    child: SegmentedButton<Platforms>(
+                      segments: const <ButtonSegment<Platforms>>[
+                        ButtonSegment<Platforms>(value: Platforms.youtube, label: Text('YouTube')),
+                        // ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
+                        // ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
+                      ],
+                      selected: _selectedPlatform,
+                      onSelectionChanged: (Set<Platforms> newSelection) {
+                        setState(() {
+                          _selectedPlatform = newSelection;
+                        });
+                      },
+                      multiSelectionEnabled: false,
+                      showSelectedIcon: false,
+                    ),
+                  ),
                   SizedBox(
                     height: 32,
                     child: VerticalDivider(
@@ -95,32 +196,39 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const Expanded(
-                    child: YouTubeFilter()
+                  Expanded(
+                    child: _getSelectedFilter(),
                   ),
-                  // Padding(
-                  //   padding: const EdgeInsets.all(8.0),
-                  //   child: FilledButton.tonalIcon(
-                  //     onPressed: () => showDialog<String>(
-                  //       context: context,
-                  //       builder: (BuildContext context) => const MyExportDialog()
-                  //     ),
-                  //     label: Text(
-                  //       '匯出',
-                  //       style: Theme.of(context).textTheme.labelMedium,
-                  //     ),
-                  //     icon: const Icon(
-                  //       Icons.file_download,
-                  //     ),
-                  //   ),
-                  // )
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => MyExportDialog(
+                          selectedColumns: youtubeProvider.selectedColumns,
+                          onSubmitted: () async {
+                            log(youtubeProvider.selectedColumns.toString());
+                            Navigator.pop(context);
+                            await downloadCSV(youtubeProvider.exportCsv, 'YouTube_${youtubeProvider.searchText}_${DateFormat('yyMMddhhmmss').format(DateTime.now())}');
+                          },
+                        )
+                      ),
+                      label: Text(
+                        '匯出',
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                      icon: const Icon(
+                        Icons.file_download,
+                      ),
+                    ),
+                  )
                 ],
               ),
             ),
           ),
           // Progress Indicator
           LinearProgressIndicator(
-            value: context.watch<ResultTableProvider>().isLoading?
+            value: _isLoading?
               controller.value:0,
           ),
           // Content
@@ -132,7 +240,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
               ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
-                child: tableProvider.selectedTable,
+                child: _getSelectedTable(),
               ),
             )
           ),
@@ -161,7 +269,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                '顯示${youtubeProvider.displayedData.length}筆/共${youtubeProvider.originalData.length}筆',
+                '顯示${youtubeProvider.displayedData.length}筆/載入${youtubeProvider.originalData.length}筆',
                 style: Theme.of(context).textTheme.labelMedium,
               ),
             ),

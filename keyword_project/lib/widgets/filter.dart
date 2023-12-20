@@ -24,15 +24,51 @@ class YouTubeFilter extends StatefulWidget {
 class _YouTubeFilterState extends State<YouTubeFilter> {
   Set<ExerciseFilter> filters = <ExerciseFilter>{};
 
+  final titleFilterController = TextEditingController();
+  final viewCountFilterController = TextEditingController();
+  final likeCountFilterController = TextEditingController();
+  final commentCountFilterController = TextEditingController();
+
+  @override
+  void dispose() {
+    titleFilterController.dispose();
+    viewCountFilterController.dispose();
+    likeCountFilterController.dispose();
+    commentCountFilterController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     var searchProvider = context.watch<YoutubeSearchProvider>();
-
+    
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: Wrap(
         spacing: 4,
         children: [
+          SizedBox(
+            height: 32,
+            width: 32,
+            child: IconButton(
+              icon: const Icon(Icons.restart_alt_outlined, size: 16,),
+              tooltip: '重置篩選設定',
+              onPressed: () {
+                searchProvider.isSortByRelevance = true;
+                searchProvider.mustSelected = false;
+                searchProvider.mustContainsEmail = false;
+                titleFilterController.clear();
+                searchProvider.titleContainedText = '';
+                viewCountFilterController.clear();
+                searchProvider.viewCountLowerBound = '0';
+                likeCountFilterController.clear();
+                searchProvider.likeCountLowerBound = '0';
+                commentCountFilterController.clear();
+                searchProvider.commentCountLowerBound = '0';
+                searchProvider.onDisplayedDataFilterSort();
+              },
+            ),
+          ),
           MyFilterChip(
             hitText: '依相關度排序', 
             selected: searchProvider.isSortByRelevance, 
@@ -40,56 +76,68 @@ class _YouTubeFilterState extends State<YouTubeFilter> {
           ),
           MyFilterChip(
             hitText: '有Email', 
-            selected: searchProvider.filterCriteria.mustContainsEmail, 
+            selected: searchProvider.mustContainsEmail, 
             onSelected: (bool selected) {
-              searchProvider.filterCriteria.mustContainsEmail = selected;
+              searchProvider.mustContainsEmail = selected;
+              searchProvider.onDisplayedDataFilterSort();
+            }
+          ),
+          MyFilterChip(
+            hitText: '已選取', 
+            selected: searchProvider.mustSelected, 
+            onSelected: (bool selected) {
+              searchProvider.mustSelected = selected;
               searchProvider.onDisplayedDataFilterSort();
             }
           ),
           FilterTextField(
             hitText: '標題包含',
+            controller: titleFilterController,
             width: 200,
             onSubmitted: (String text) {
               if (text.isNotEmpty) {
-                searchProvider.filterCriteria.titleContainedText = text;
+                searchProvider.titleContainedText = text;
               } else {
-                searchProvider.filterCriteria.titleContainedText = '';
+                searchProvider.titleContainedText = '';
               }
               searchProvider.onDisplayedDataFilterSort();
             },
           ),
           FilterTextField(
             hitText: '觀看數>=',
+            controller: viewCountFilterController,
             width:104,
             onSubmitted: (String text) {
               if (text.isNotEmpty && isNumeric(text)) {
-                searchProvider.filterCriteria.viewCountLowerBound = text;
+                searchProvider.viewCountLowerBound = text;
               } else {
-                searchProvider.filterCriteria.viewCountLowerBound = '0';
+                searchProvider.viewCountLowerBound = '0';
               }
               searchProvider.onDisplayedDataFilterSort();
             },
           ),
           FilterTextField(
             hitText: '喜歡數>=',
+            controller: likeCountFilterController,
             width: 88,
             onSubmitted: (String text) {
               if (text.isNotEmpty && isNumeric(text)) {
-                searchProvider.filterCriteria.likeCountLowerBound = text;
+                searchProvider.likeCountLowerBound = text;
               } else {
-                searchProvider.filterCriteria.likeCountLowerBound = '0';
+                searchProvider.likeCountLowerBound = '0';
               }
               searchProvider.onDisplayedDataFilterSort();
             },
           ),
           FilterTextField(
             hitText: '留言數>=',
+            controller: commentCountFilterController,
             width: 88,
             onSubmitted: (String text) {
               if (text.isNotEmpty && isNumeric(text)) {
-                searchProvider.filterCriteria.commentCountLowerBound = text;
+                searchProvider.commentCountLowerBound = text;
               } else {
-                searchProvider.filterCriteria.commentCountLowerBound = '0';
+                searchProvider.commentCountLowerBound = '0';
               }
               searchProvider.onDisplayedDataFilterSort();
             },
@@ -106,10 +154,14 @@ class PixnetFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var searchProvider = context.watch<PixnetSearchProvider>();
+    final titleFilterController = TextEditingController();
+    final viewCountFilterController = TextEditingController();
+    final commentCountFilterController = TextEditingController();
 
     return Row(children: [
       FilterTextField(
         hitText: '標題包含',
+        controller: titleFilterController,
         width: 200,
         onSubmitted: (String text) {
           searchProvider.displayedData = text.isEmpty
@@ -120,6 +172,7 @@ class PixnetFilter extends StatelessWidget {
       ),
       FilterTextField(
         hitText: '觀看數>=',
+        controller: viewCountFilterController,
         width: 120,
         onSubmitted: (String text) {
           searchProvider.displayedData = text.isEmpty
@@ -130,6 +183,7 @@ class PixnetFilter extends StatelessWidget {
       ),
       FilterTextField(
         hitText: '留言數>=',
+        controller: commentCountFilterController,
         width: 120,
         onSubmitted: (String text) {
           searchProvider.displayedData = text.isEmpty
@@ -148,6 +202,7 @@ class FilterTextField extends StatelessWidget {
   final String hitText;
   final double width;
   final double height = 34;
+  final TextEditingController controller;
 
 
   const FilterTextField({
@@ -155,6 +210,7 @@ class FilterTextField extends StatelessWidget {
     required this.hitText,
     required this.width,
     required this.onSubmitted, 
+    required this.controller, 
   });
 
   @override
@@ -163,6 +219,7 @@ class FilterTextField extends StatelessWidget {
       width: width,
       height: height,
       child: TextField(
+        controller: controller,
         decoration: InputDecoration(
           hintText: hitText,
           hintStyle: Theme.of(context).textTheme.labelMedium,
