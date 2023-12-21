@@ -14,14 +14,14 @@ bool isNumeric(String s) {
   }
 }
 
-class YouTubeFilter extends StatefulWidget {
-  const YouTubeFilter({super.key});
+class YoutubeFilter extends StatefulWidget {
+  const YoutubeFilter({super.key});
 
   @override
-  State<YouTubeFilter> createState() => _YouTubeFilterState();
+  State<YoutubeFilter> createState() => _YoutubeFilterState();
 }
 
-class _YouTubeFilterState extends State<YouTubeFilter> {
+class _YoutubeFilterState extends State<YoutubeFilter> {
   Set<ExerciseFilter> filters = <ExerciseFilter>{};
 
   final titleFilterController = TextEditingController();

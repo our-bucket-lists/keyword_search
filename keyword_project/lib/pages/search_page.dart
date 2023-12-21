@@ -42,9 +42,9 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
       case Platforms.instagram:
         return Container();
       case Platforms.youtube:
-        return const YouTubeFilter();
+        return const YoutubeFilter();
       default:
-        return const YouTubeFilter();
+        return const YoutubeFilter();
     }
   }
 
@@ -129,10 +129,13 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       });
                       log('Search Keyword: $value');
                       pixnetProvider.searchText = instagramProvider.searchText = youtubeProvider.searchText = value;
-                      await youtubeProvider.search();
-                      setState(() {
-                        _isLoading = false;
-                      });
+                      try {
+                        await youtubeProvider.search();
+                      } finally {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
                       // try {
                       //   pixnetProvider.search();
                       // } catch (_) {
@@ -204,8 +207,8 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                     child: FilledButton.tonalIcon(
                       onPressed: () => showDialog<String>(
                         context: context,
-                        builder: (BuildContext context) => MyExportDialog(
-                          selectedColumns: youtubeProvider.selectedColumns,
+                        builder: (BuildContext context) => YoutubeExportDialog(
+                          provider: youtubeProvider,
                           onSubmitted: () async {
                             log(youtubeProvider.selectedColumns.toString());
                             Navigator.pop(context);

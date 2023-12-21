@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:keyword_project/provider/youtube_provider.dart';
+import 'package:provider/provider.dart';
 
-class MyExportDialog extends StatelessWidget {
+class YoutubeExportDialog extends StatelessWidget {
   final Function() onSubmitted;
-  final Set<String> selectedColumns;
+  final dynamic provider;
 
-  const MyExportDialog({
+  const YoutubeExportDialog({
     super.key, 
     required this.onSubmitted, 
-    required this.selectedColumns,
+    required this.provider,
   });
   @override
   Widget build(BuildContext context) {
@@ -26,23 +28,23 @@ class MyExportDialog extends StatelessWidget {
           4: IntrinsicColumnWidth(),
         },
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-        children: <TableRow>[
+        children: const <TableRow>[
           TableRow(
             children: <Widget>[
-              ExportOption(text: "發布日期", selectedColumns: selectedColumns,),
-              ExportOption(text: "影片標題", selectedColumns: selectedColumns,),
-              ExportOption(text: "影片連結", selectedColumns: selectedColumns,),
-              ExportOption(text: "觀看數", selectedColumns: selectedColumns,),
-              ExportOption(text: "喜歡數", selectedColumns: selectedColumns,),
+              YoutubeExportOption(text: "發布日期",),
+              YoutubeExportOption(text: "影片標題",),
+              YoutubeExportOption(text: "影片連結",),
+              YoutubeExportOption(text: "觀看數",),
+              YoutubeExportOption(text: "喜歡數",),
             ] 
           ), 
           TableRow( 
             children: <Widget>[
-              ExportOption(text: "留言數", selectedColumns: selectedColumns,),
-              ExportOption(text: "頻道名稱", selectedColumns: selectedColumns,),
-              ExportOption(text: "頻道連結", selectedColumns: selectedColumns,),
-              ExportOption(text: "訂閱數", selectedColumns: selectedColumns,),
-              ExportOption(text: "Email", selectedColumns: selectedColumns,),
+              YoutubeExportOption(text: "留言數",),
+              YoutubeExportOption(text: "頻道名稱",),
+              YoutubeExportOption(text: "頻道連結",),
+              YoutubeExportOption(text: "訂閱數",),
+              YoutubeExportOption(text: "Email",),
             ],
           ),
         ],
@@ -63,45 +65,35 @@ class MyExportDialog extends StatelessWidget {
   }
 }
 
-class ExportOption extends StatefulWidget {
+class YoutubeExportOption extends StatelessWidget {
   final String text;
-  final Set<String> selectedColumns;
 
-  const ExportOption({
+  const YoutubeExportOption({
     super.key, 
     required this.text, 
-    required this.selectedColumns
   });
 
   @override
-  State<ExportOption> createState() => _ExportOptionState();
-}
-
-class _ExportOptionState extends State<ExportOption> {
-  bool _isSelected = true;
-  @override
   Widget build(BuildContext context) {
+    var youtubeProvider = context.watch<YoutubeSearchProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       child: Row(
         children: [
           Checkbox(
-            value: _isSelected,
+            value: youtubeProvider.selectedColumns.contains(text),
             onChanged: (bool? value) {
               switch (value) {
                 case true:
-                  widget.selectedColumns.add(widget.text);
+                  youtubeProvider.onAddToSelectedColumns(text);
                   break;
                 default:
-                  widget.selectedColumns.remove(widget.text);
+                  youtubeProvider.onRemoveFromSelectedColumns(text);
                   break;
               }
-              setState(() {
-                _isSelected = widget.selectedColumns.contains(widget.text);
-              });
             },
           ), 
-          Text(widget.text),
+          Text(text),
         ],
       ),
     );
