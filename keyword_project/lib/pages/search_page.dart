@@ -253,7 +253,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
             ),
-            child: youtubeProvider.originalData.isNotEmpty&&youtubeProvider.displayedData.length<11?
+            child: youtubeProvider.originalData.isNotEmpty&&youtubeProvider.displayedData.length<12?
             FilledButton.tonal(
               child: Text(
                 '載入更多',
