@@ -53,7 +53,15 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
                 onTap: () async => await launchUrl(Uri.https('www.youtube.com','/watch', {'v': search.displayedData[index].id.videoId})),
               ),
               DataCell(SizedBox(
-                width: _columnWidth[2],child: Text(overflow: TextOverflow.ellipsis,(int.parse(search.displayedData[index].id.videoViewCount)/1000).toStringAsFixed(1)))),
+                width: _columnWidth[2],
+                child: Tooltip(
+                  message: search.displayedData[index].id.videoViewCount,
+                  child: Text(
+                    overflow: TextOverflow.ellipsis,
+                    (int.parse(search.displayedData[index].id.videoViewCount)/1000).toStringAsFixed(1)
+                  )
+                )
+              )),
               DataCell(SizedBox(
                 width: _columnWidth[3],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].id.videoLikeCount))),
               DataCell(SizedBox(
@@ -72,20 +80,26 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
                 onTap: () async => await launchUrl(Uri.https('www.youtube.com','channel/${search.displayedData[index].snippet.channelId}')),
               ),
               DataCell(SizedBox(
-                width: _columnWidth[6],child: Text(overflow: TextOverflow.ellipsis,(int.parse(search.displayedData[index].snippet.followerCount)/1000).toStringAsFixed(1)))),
-              DataCell(
-                SizedBox(
-                  width: _columnWidth[7],
-                  child: Tooltip(
-                    message: search.displayedData[index].snippet.email,
-                    child: Text(
-                      overflow: TextOverflow.ellipsis,
-                      search.displayedData[index].snippet.email.isNotEmpty?
-                      search.displayedData[index].snippet.email.split(',')[0]:''
-                    )
+                width: _columnWidth[6],
+                child: Tooltip(
+                  message: search.displayedData[index].snippet.followerCount,
+                  child: Text(
+                    overflow: TextOverflow.ellipsis,
+                    (int.parse(search.displayedData[index].snippet.followerCount)/1000).toStringAsFixed(1)
                   )
                 )
-              ),
+              )),
+              DataCell(SizedBox(
+                width: _columnWidth[7],
+                child: Tooltip(
+                  message: search.displayedData[index].snippet.email,
+                  child: Text(
+                    overflow: TextOverflow.ellipsis,
+                    search.displayedData[index].snippet.email.isNotEmpty?
+                    search.displayedData[index].snippet.email.split(',')[0]:''
+                  )
+                )
+              )),
             ],
             selected: searchYoutube.selectedItems.contains(searchYoutube.displayedData[index].id.videoId),
             onSelectChanged: (bool? isSelected) => 
