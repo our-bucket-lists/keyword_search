@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:developer';
 
 import 'package:csv/csv.dart';
@@ -12,7 +13,13 @@ import 'package:keyword_project/modles/youtube_video_model.dart' as video;
 class YoutubeSearchProvider extends ChangeNotifier {
   // For API request
   static const _apiEndpoint = 'youtube.googleapis.com';
-  final String _youtubeApiKey = 'AIzaSyDl6f1JPAAE59rp_ts7Al_fX7vMG7-_4Sk';
+  final Set<String> _youtubeApiKey = {
+    'AIzaSyC9kt4Ck0fYEcuVRHQ-XfXqD-fJW0N6SL0',
+    'xAIzaSyAHJRfka1IUbfrlsKfwsutxlD42CWW174Q',
+    'AIzaSyDKCSzOe8AnvKwz4qQzYFjfmCDj6BFxHIQ',
+    'AIzaSyBnGlaUIu5uvDWo6CzCHl1qqtyUdbtIQCg',
+  };
+  int _currentApiKeyIndex = 0;
   final int _resultsPerPage = 50;
   String _searchText = '';
   String _nextPageToken = '';
@@ -29,13 +36,14 @@ class YoutubeSearchProvider extends ChangeNotifier {
   video.YoutubeVideo _videoResponse = video.YoutubeVideo(items: []);
   
   // For Data storage
-  final _originalData = <Item>[];
+  var _originalData = <Item>[];
   var _displayedData = <Item>[];
-  final  _selectedItems = <String>{};
-  final  selectedColumns = <String>{'發布日期', '影片標題', '影片連結', '觀看數', '喜歡數', '留言數', '頻道名稱', '頻道連結', '訂閱數', 'Email'};
-  
+  var _selectedItems = <String>{};
+  final _selectedColumns = <String>{'發布日期', '影片標題', '影片連結', '觀看數', '喜歡數', '留言數', '頻道名稱', '頻道連結', '訂閱數', 'Email'};
+  var _videoIdSet = HashSet<String>();
+
   // For data sorting and filtering
-  final FilterCriteria _filterCriteria = FilterCriteria();
+  FilterCriteria _filterCriteria = FilterCriteria();
   List<bool> _isAscendingSortedColumn = List.generate(8, (index) => false);
   bool _isSortByRelevance = true; 
   int _sortedColumnIndex = 0;
@@ -43,13 +51,36 @@ class YoutubeSearchProvider extends ChangeNotifier {
   
   // Seter
   set searchText(String searchText) {
+    // For API request
     _searchText = searchText;
     _nextPageToken = '';
     _maxPage = 0;
     _currentPage = 0;
+    notifyListeners();
+
+    // For API response
+    _searchResults = YoutubeSearch(
+        nextPageToken: '', 
+        pageInfo: PageInfo(totalResults: 0, resultsPerPage: 0), 
+        items: []
+      );
+    _channelResponse = channel.YoutubeChannel(items: []);
+    _videoResponse = video.YoutubeVideo(items: []);
+    notifyListeners();
+
+    // For Data storage
+    _originalData = [];
     _displayedData = [];
+    _selectedItems = <String>{};
+    _videoIdSet = HashSet<String>();
+    notifyListeners();
+
+     // For data sorting and filtering
+     _filterCriteria = FilterCriteria();   
     _isAscendingSortedColumn = List.generate(8, (index) => false);
     _isSortByRelevance = true;
+    _sortedColumnIndex = 0;
+    isLoadMoreDisplayed = false;
     notifyListeners();
   }
   set isSortByRelevance(bool input) {
@@ -86,6 +117,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
   List<Item> get originalData => _originalData;
   List<Item> get displayedData => _displayedData;
   Set<String> get selectedItems => _selectedItems;
+  Set<String> get selectedColumns => _selectedColumns;
   List<bool> get isAscendingSortedColumn => _isAscendingSortedColumn;
   int get sortedColumnIndex => _sortedColumnIndex;
   bool get isSortByRelevance => _isSortByRelevance;
@@ -93,68 +125,68 @@ class YoutubeSearchProvider extends ChangeNotifier {
   bool get mustSelected => _filterCriteria.mustSelected;
   String get exportCsv {
     List<String> header = [];
-    if(selectedColumns.contains("發布日期")) {
+    if(_selectedColumns.contains("發布日期")) {
       header.add("發布日期");
     }
-    if(selectedColumns.contains("影片標題")) {
+    if(_selectedColumns.contains("影片標題")) {
       header.add("影片標題");
     }
-    if(selectedColumns.contains("影片連結")) {
+    if(_selectedColumns.contains("影片連結")) {
       header.add("影片連結");
     }
-    if(selectedColumns.contains("觀看數")) {
+    if(_selectedColumns.contains("觀看數")) {
       header.add("觀看數");
     }
-    if(selectedColumns.contains("喜歡數")) {
+    if(_selectedColumns.contains("喜歡數")) {
       header.add("喜歡數");
     }
-    if(selectedColumns.contains("留言數")) {
+    if(_selectedColumns.contains("留言數")) {
       header.add("留言數");
     }
-    if(selectedColumns.contains("頻道名稱")) {
+    if(_selectedColumns.contains("頻道名稱")) {
       header.add("頻道名稱");
     }
-    if(selectedColumns.contains("頻道連結")) {
+    if(_selectedColumns.contains("頻道連結")) {
       header.add("頻道連結");
     }
-    if(selectedColumns.contains("訂閱數")) {
+    if(_selectedColumns.contains("訂閱數")) {
       header.add("訂閱數");
     }
-    if(selectedColumns.contains("Email")) {
+    if(_selectedColumns.contains("Email")) {
       header.add("Email");
     }
 
     return const ListToCsvConverter().convert(
       [header, ..._originalData.where((element) => _selectedItems.contains(element.id.videoId)).map((e) {
         List<String> item = [];
-        if(selectedColumns.contains("發布日期")) {
+        if(_selectedColumns.contains("發布日期")) {
           item.add(DateFormat('yyyy/MM/dd').format(e.snippet.publishTime));
         }
-        if(selectedColumns.contains("影片標題")) {
+        if(_selectedColumns.contains("影片標題")) {
           item.add(e.snippet.title);
         }
-        if(selectedColumns.contains("影片連結")) {
+        if(_selectedColumns.contains("影片連結")) {
           item.add(Uri.https('www.youtube.com','/watch', {'v': e.id.videoId}).toString());
         }
-        if(selectedColumns.contains("觀看數")) {
+        if(_selectedColumns.contains("觀看數")) {
           item.add(e.id.videoViewCount);
         }
-        if(selectedColumns.contains("喜歡數")) {
+        if(_selectedColumns.contains("喜歡數")) {
           item.add(e.id.videoLikeCount);
         }
-        if(selectedColumns.contains("留言數")) {
+        if(_selectedColumns.contains("留言數")) {
           item.add(e.id.videoCommentCount);
         }
-        if(selectedColumns.contains("頻道名稱")) {
+        if(_selectedColumns.contains("頻道名稱")) {
           item.add(e.snippet.channelTitle);
         }
-        if(selectedColumns.contains("頻道連結")) {
+        if(_selectedColumns.contains("頻道連結")) {
           item.add(Uri.https('www.youtube.com','channel/${e.snippet.channelId}').toString());
         }
-        if(selectedColumns.contains("訂閱數")) {
+        if(_selectedColumns.contains("訂閱數")) {
           item.add(e.snippet.followerCount);
         }
-        if(selectedColumns.contains("Email")) {
+        if(_selectedColumns.contains("Email")) {
           item.add(e.snippet.email);
         }
         return item;
@@ -215,7 +247,17 @@ class YoutubeSearchProvider extends ChangeNotifier {
         _selectedItems.remove(item.id.videoId);
     } 
     notifyListeners();
-    onDisplayedDataFilterSort();
+    _displayedData = _onFilter(_displayedData);
+  }
+
+  void onAddToSelectedColumns(String header) {
+    _selectedColumns.add(header);
+    notifyListeners();
+  }
+
+  void onRemoveFromSelectedColumns(String header) {
+    _selectedColumns.remove(header);
+    notifyListeners();
   }
 
   int _onCompare(bool isAscending, var a, var b) {
@@ -252,7 +294,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
   }
 
   onLoadMore() async {
-    if (_currentPage < _maxPage) {
+    if (_nextPageToken.isNotEmpty) {
       log('Loading more is started on YouTube...');
       _currentPage += 1;
       await _getSearchResultApi();
@@ -265,26 +307,26 @@ class YoutubeSearchProvider extends ChangeNotifier {
 
   _getSearchResultApi() async {
     List<Item> currentResults = [];
-    var uri = Uri.https(
-      _apiEndpoint,
-      '/youtube/v3/search', 
-      {
-        'part': 'snippet',
-        'maxResults': '$_resultsPerPage',
-        'key': _youtubeApiKey,
-        'type':'video',
-        'q': _searchText,
-        'pageToken' : _nextPageToken,
-      }
-    );
     try {
+      var uri = Uri.https(
+        _apiEndpoint,
+        '/youtube/v3/search', 
+        {
+          'part': 'snippet',
+          'maxResults': '$_resultsPerPage',
+          'key': _youtubeApiKey.elementAt(_currentApiKeyIndex),
+          'type':'video',
+          'q': _searchText,
+          'pageToken' : _nextPageToken,
+        }
+      );
       http.Response response = await http.get(uri);
       switch (response.statusCode) {
         case 200:
           _searchResults = youtubeSearchFromJson(response.body);
           _nextPageToken = _searchResults.nextPageToken;
-          currentResults = _searchResults.items;
-
+          currentResults = _searchResults.items.where((element) => !_videoIdSet.contains(element.id.videoId)).toList();
+          _videoIdSet.addAll(currentResults.map((e) => e.id.videoId).toSet());
           await Future.wait(
             currentResults.map(
               (element) async {
@@ -305,10 +347,12 @@ class YoutubeSearchProvider extends ChangeNotifier {
             log('[ERROR] Http Request Execution Error: ${err.toString()}');
             throw Exception(err);
           });
-
+          
           _displayedData.addAll(_onFilter(currentResults));
           _originalData.addAll(currentResults);
+          break;
         default:
+          _currentApiKeyIndex = (_currentApiKeyIndex+1)%_youtubeApiKey.length;
           log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
           log('[ERROR] Http Response Error: ${response.body}');
           throw Exception(response.reasonPhrase);
@@ -326,7 +370,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
       {
         'part': 'snippet,statistics',
         'id': channelId,
-        'key': _youtubeApiKey,
+        'key': _youtubeApiKey.elementAt(_currentApiKeyIndex),
       }
     );
     try {
@@ -335,6 +379,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
         case 200:
           _channelResponse = channel.youtubeChannelFromJson(response.body);
         default:
+          _currentApiKeyIndex = (_currentApiKeyIndex+1)%_youtubeApiKey.length;
           log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
           throw Exception(response.reasonPhrase);
       }
@@ -355,7 +400,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
       {
         'part': 'statistics',
         'id': videoId,
-        'key': _youtubeApiKey,
+        'key': _youtubeApiKey.elementAt(_currentApiKeyIndex),
       }
     );
     try {
@@ -364,6 +409,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
         case 200:
           _videoResponse = video.youtubeVideoFromJson(response.body);
         default:
+          _currentApiKeyIndex = (_currentApiKeyIndex+1)%_youtubeApiKey.length;
           log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
           throw Exception(response.reasonPhrase);
       }
