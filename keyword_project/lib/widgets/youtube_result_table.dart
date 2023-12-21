@@ -24,8 +24,6 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
     super.initState();
   }
 
-  
-
   TextEditingController controller = TextEditingController();
 
   @override
@@ -55,7 +53,7 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
                 onTap: () async => await launchUrl(Uri.https('www.youtube.com','/watch', {'v': search.displayedData[index].id.videoId})),
               ),
               DataCell(SizedBox(
-                width: _columnWidth[2],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].id.videoViewCount))),
+                width: _columnWidth[2],child: Text(overflow: TextOverflow.ellipsis,(int.parse(search.displayedData[index].id.videoViewCount)/1000).toStringAsFixed(1)))),
               DataCell(SizedBox(
                 width: _columnWidth[3],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].id.videoLikeCount))),
               DataCell(SizedBox(
@@ -74,7 +72,7 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
                 onTap: () async => await launchUrl(Uri.https('www.youtube.com','channel/${search.displayedData[index].snippet.channelId}')),
               ),
               DataCell(SizedBox(
-                width: _columnWidth[6],child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].snippet.followerCount))),
+                width: _columnWidth[6],child: Text(overflow: TextOverflow.ellipsis,(int.parse(search.displayedData[index].snippet.followerCount)/1000).toStringAsFixed(1)))),
               DataCell(
                 SizedBox(
                   width: _columnWidth[7],
@@ -126,7 +124,7 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
                   searchYoutube.onDisplayedDataSort(columnIndex, isAscending),
               ),
               DataColumn(
-                label: const Text('觀看數', style: TextStyle(fontWeight: FontWeight.bold),),
+                label: const Text('觀看數(K)', style: TextStyle(fontWeight: FontWeight.bold),),
                 onSort: (columnIndex, isAscending) =>
                   searchYoutube.onDisplayedDataSort(columnIndex, isAscending),
               ),
@@ -146,7 +144,7 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
                   searchYoutube.onDisplayedDataSort(columnIndex, isAscending),
               ),
               DataColumn(
-                label: const Text('訂閱數', style: TextStyle(fontWeight: FontWeight.bold),),
+                label: const Text('訂閱數(K)', style: TextStyle(fontWeight: FontWeight.bold),),
                 onSort: (columnIndex, isAscending) =>
                   searchYoutube.onDisplayedDataSort(columnIndex, isAscending),
               ),
