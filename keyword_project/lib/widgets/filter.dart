@@ -106,10 +106,10 @@ class _YoutubeFilterState extends State<YoutubeFilter> {
           FilterTextField(
             hitText: '觀看數>=',
             controller: viewCountFilterController,
-            width:104,
+            width:88,
             onSubmitted: (String text) {
               if (text.isNotEmpty && isNumeric(text)) {
-                searchProvider.viewCountLowerBound = text;
+                searchProvider.viewCountLowerBound = (double.parse(text)*1000).toString();
               } else {
                 searchProvider.viewCountLowerBound = '0';
               }
