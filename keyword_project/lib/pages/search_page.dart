@@ -29,11 +29,11 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
-  late AnimationController controller;
-  bool determinate = false;
   Set<Platforms> _selectedPlatform = <Platforms>{Platforms.youtube};
-  bool _isLoading = false;
-  Set<String> youtubeSelectedItems = {};
+
+  late AnimationController pixnetProgressIndicator;
+  late AnimationController youtubeProgressIndicator;
+  late AnimationController instagramProgressIndicator;
 
   Widget _getSelectedFilter() {
     switch (_selectedPlatform.elementAt(0)) {
@@ -45,7 +45,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
         return const YoutubeFilter();
     }
   }
-
+  
   Widget _getSelectedTable() {
     switch (_selectedPlatform.elementAt(0)) {
       case Platforms.pixnet:
@@ -73,26 +73,42 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    controller = AnimationController(
+    pixnetProgressIndicator = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..addListener(() {
         setState(() {});
       });
-    controller.repeat();
+    pixnetProgressIndicator.repeat();
+    youtubeProgressIndicator = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..addListener(() {
+        setState(() {});
+      });
+    youtubeProgressIndicator.repeat();
+    instagramProgressIndicator = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..addListener(() {
+        setState(() {});
+      });
+    instagramProgressIndicator.repeat();
     super.initState();
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    pixnetProgressIndicator.dispose();
+    youtubeProgressIndicator.dispose();
+    instagramProgressIndicator.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     var pixnetProvider = context.watch<PixnetSearchProvider>();
-    var instagramProvider = context.read<InstagramSearchProvider>();
+    var instagramProvider = context.watch<InstagramSearchProvider>();
     var youtubeProvider = context.watch<YoutubeSearchProvider>();
 
     Widget getSelectedLoadingCounter() {
@@ -154,6 +170,17 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
       }
     }
 
+    Widget getSelectedProgressIndicator() {
+      switch (_selectedPlatform.elementAt(0)) {
+        case Platforms.pixnet:
+          return LinearProgressIndicator(value: pixnetProvider.isLoading?pixnetProgressIndicator.value:0,);
+        case Platforms.instagram:
+          return LinearProgressIndicator(value: false?instagramProgressIndicator.value:0,);
+        default:
+          return LinearProgressIndicator(value: youtubeProvider.isLoading?youtubeProgressIndicator.value:0,);
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
@@ -178,17 +205,16 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                   width: 640,
                   child: PostSearchBar(
                     onSubmitted: (value) async {
-                      setState(() {
-                        _isLoading = true;
-                      });
                       log('Search Keyword: $value');
                       pixnetProvider.searchText = instagramProvider.searchText = youtubeProvider.searchText = value;
                       try {
-                        await pixnetProvider.search();
+                        pixnetProvider.search();
                       } finally {
-                        setState(() {
-                          _isLoading = false;
-                        });
+                        try {
+                          youtubeProvider.search();
+                        } finally {
+
+                        }
                       }
                       // try {
                       //   pixnetProvider.search();
@@ -265,10 +291,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             ),
           ),
           // Progress Indicator
-          LinearProgressIndicator(
-            value: _isLoading?
-              controller.value:0,
-          ),
+          getSelectedProgressIndicator(),
           // Content
           Expanded(
             child: Container(
