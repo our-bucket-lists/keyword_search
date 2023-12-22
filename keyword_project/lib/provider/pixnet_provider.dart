@@ -33,6 +33,9 @@ class PixnetSearchProvider extends ChangeNotifier {
   int _sortedColumnIndex = 0;
   bool isLoadMoreDisplayed = false;
 
+  // For loading indicator
+  bool _isLoading = false;
+
   // Setter
   set searchText(String searchText) {
     // For API request
@@ -59,6 +62,10 @@ class PixnetSearchProvider extends ChangeNotifier {
     _isSortByRelevance = true; 
     _sortedColumnIndex = 0;
     isLoadMoreDisplayed = false;
+
+    // For loading indicator
+    _isLoading = false;
+    
     notifyListeners();
   }
   set isSortByRelevance(bool input) {
@@ -89,6 +96,10 @@ class PixnetSearchProvider extends ChangeNotifier {
     _filterCriteria.mustSelected = input;
     notifyListeners();
   }
+  set isLoading(bool input) {
+    _isLoading = input;
+    notifyListeners();
+  }
 
   // Geter
   String get searchText => _searchText;
@@ -102,6 +113,7 @@ class PixnetSearchProvider extends ChangeNotifier {
   bool get mustContainsEmail => _filterCriteria.mustContainsEmail;
   bool get mustContainsIg => _filterCriteria.mustContainsIg;
   bool get mustSelected => _filterCriteria.mustSelected;
+  bool get isLoading => _isLoading;
   String get exportCsv {
     List<String> header = [];
     if(_selectedColumns.contains("發布日期")) {
@@ -252,6 +264,7 @@ class PixnetSearchProvider extends ChangeNotifier {
   // Getting data via API
   search() async {
     if (_searchText.isNotEmpty) {
+      isLoading = true;
       log('Searching Started on Pixnet...');
       _currentPage += 1;
       await _getSearchResultApi();
@@ -260,11 +273,13 @@ class PixnetSearchProvider extends ChangeNotifier {
       log('Current Page = $_currentPage');
 
       notifyListeners();
+      isLoading = false;
     }
   }
 
   onLoadMore() async {
     if (_currentPage<_maxPage) {
+      isLoading = true;
       log('Loading more is started on Pixnet...');
       _currentPage += 1;
       await _getSearchResultApi();
@@ -272,6 +287,7 @@ class PixnetSearchProvider extends ChangeNotifier {
       log('Current Page = $_currentPage');
 
       notifyListeners();
+      isLoading = false;
     }
   }
 
