@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => YoutubeSearchProvider()),
       ],
       child: MaterialApp(
-        title: 'KEYWORD SEARCHING',
+        title: 'Kelivi Search Engine',
         theme: myDarkTheme,
         home: const HomeScreen()
       ),

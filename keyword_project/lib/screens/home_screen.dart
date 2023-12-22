@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import 'package:keyword_project/pages/search_page.dart';
-import 'package:keyword_project/pages/mail_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         page = const SearchPage();
       case 1:
-        page = const MailPage();
+        page = const Placeholder();
       case 2:
         page = const Placeholder();
       default:
