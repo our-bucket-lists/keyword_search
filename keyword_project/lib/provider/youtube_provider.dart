@@ -23,7 +23,6 @@ class YoutubeSearchProvider extends ChangeNotifier {
   final int _resultsPerPage = 50;
   String _searchText = '';
   String _nextPageToken = '';
-  int _maxPage = 0;
   int _currentPage = 0;
 
   // For API response
@@ -54,7 +53,6 @@ class YoutubeSearchProvider extends ChangeNotifier {
     // For API request
     _searchText = searchText;
     _nextPageToken = '';
-    _maxPage = 0;
     _currentPage = 0;
     notifyListeners();
 
@@ -284,9 +282,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
       log('Searching Started on YouTube...');
       _currentPage += 1;
       await _getSearchResultApi();
-      _maxPage = (_searchResults.pageInfo.totalResults/_resultsPerPage).ceil();
       log('Searching Completed on YouTube!');
-      log('Max Page = $_maxPage');
       log('Current Page = $_currentPage');
 
       notifyListeners();
@@ -307,19 +303,19 @@ class YoutubeSearchProvider extends ChangeNotifier {
 
   _getSearchResultApi() async {
     List<Item> currentResults = [];
+    var uri = Uri.https(
+      _apiEndpoint,
+      '/youtube/v3/search', 
+      {
+        'part': 'snippet',
+        'maxResults': '$_resultsPerPage',
+        'key': _youtubeApiKey.elementAt(_currentApiKeyIndex),
+        'type':'video',
+        'q': _searchText,
+        'pageToken' : _nextPageToken,
+      }
+    );
     try {
-      var uri = Uri.https(
-        _apiEndpoint,
-        '/youtube/v3/search', 
-        {
-          'part': 'snippet',
-          'maxResults': '$_resultsPerPage',
-          'key': _youtubeApiKey.elementAt(_currentApiKeyIndex),
-          'type':'video',
-          'q': _searchText,
-          'pageToken' : _nextPageToken,
-        }
-      );
       http.Response response = await http.get(uri);
       switch (response.statusCode) {
         case 200:
