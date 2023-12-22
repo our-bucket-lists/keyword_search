@@ -1,11 +1,11 @@
 {
-    "name": "keyword_project",
-    "short_name": "keyword_project",
+    "name": "Kelivi Search Engine",
+    "short_name": "Kelivi Search Engine",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#013d59",
     "theme_color": "#013d59",
-    "description": "A new Flutter project.",
+    "description": "A searching engine for YouTube, Instagram and Pixnet.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
