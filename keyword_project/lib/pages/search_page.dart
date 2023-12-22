@@ -41,8 +41,6 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
         return const PixnetFilter();
       case Platforms.instagram:
         return Container();
-      case Platforms.youtube:
-        return const YoutubeFilter();
       default:
         return const YoutubeFilter();
     }
@@ -54,8 +52,6 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
         return const PixnetResultTable();
       case Platforms.instagram:
         return const InstagramResultTable();
-      case Platforms.youtube:
-        return const YoutubeResultTable();
       default:
         return const YoutubeResultTable();
     }
@@ -111,15 +107,49 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             '',
             style: Theme.of(context).textTheme.labelMedium,
           );
-        case Platforms.youtube:
-          return Text(
-            '顯示${youtubeProvider.displayedData.length}筆/載入${youtubeProvider.originalData.length}筆',
-            style: Theme.of(context).textTheme.labelMedium,
-          );
         default:
           return Text(
             '顯示${youtubeProvider.displayedData.length}筆/載入${youtubeProvider.originalData.length}筆',
             style: Theme.of(context).textTheme.labelMedium,
+          );
+      }
+    }
+
+    Widget getSelectedExportButton() {
+      switch (_selectedPlatform.elementAt(0)) {
+        case Platforms.pixnet:
+          return FilledButton.tonalIcon(
+            onPressed: () => showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => PixnetExportDialog(
+                provider: pixnetProvider,
+                onSubmitted: () async {
+                  log(pixnetProvider.selectedColumns.toString());
+                  Navigator.pop(context);
+                  await downloadCSV(pixnetProvider.exportCsv, 'Pixnet_${pixnetProvider.searchText}_${DateFormat('yyMMddhhmmss').format(DateTime.now())}');
+                },
+              )
+            ),
+            label: Text('匯出', style: Theme.of(context).textTheme.labelMedium,),
+            icon: const Icon(Icons.file_download,),
+          );
+        case Platforms.instagram:
+          return Container();
+        default:
+          return FilledButton.tonalIcon(
+            onPressed: () => showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => YoutubeExportDialog(
+                provider: youtubeProvider,
+                onSubmitted: () async {
+                  log(youtubeProvider.selectedColumns.toString());
+                  Navigator.pop(context);
+                  await downloadCSV(youtubeProvider.exportCsv, 'YouTube_${youtubeProvider.searchText}_${DateFormat('yyMMddhhmmss').format(DateTime.now())}');
+                },
+              )
+            ),
+            label: Text('匯出', style: Theme.of(context).textTheme.labelMedium,),
+            icon: const Icon(Icons.file_download,),
           );
       }
     }
@@ -228,26 +258,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: FilledButton.tonalIcon(
-                      onPressed: () => showDialog<String>(
-                        context: context,
-                        builder: (BuildContext context) => YoutubeExportDialog(
-                          provider: youtubeProvider,
-                          onSubmitted: () async {
-                            log(youtubeProvider.selectedColumns.toString());
-                            Navigator.pop(context);
-                            await downloadCSV(youtubeProvider.exportCsv, 'YouTube_${youtubeProvider.searchText}_${DateFormat('yyMMddhhmmss').format(DateTime.now())}');
-                          },
-                        )
-                      ),
-                      label: Text(
-                        '匯出',
-                        style: Theme.of(context).textTheme.labelMedium,
-                      ),
-                      icon: const Icon(
-                        Icons.file_download,
-                      ),
-                    ),
+                    child: getSelectedExportButton(),
                   )
                 ],
               ),
