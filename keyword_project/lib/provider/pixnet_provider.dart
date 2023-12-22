@@ -3,6 +3,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:csv/csv.dart';
 
 import 'package:keyword_project/modles/pixnet_search_model.dart';
 
@@ -100,7 +102,72 @@ class PixnetSearchProvider extends ChangeNotifier {
   bool get mustContainsEmail => _filterCriteria.mustContainsEmail;
   bool get mustContainsIg => _filterCriteria.mustContainsIg;
   bool get mustSelected => _filterCriteria.mustSelected;
-  
+  String get exportCsv {
+    List<String> header = [];
+    if(_selectedColumns.contains("發布日期")) {
+      header.add("發布日期");
+    }
+    if(_selectedColumns.contains("文章標題")) {
+      header.add("文章標題");
+    }
+    if(_selectedColumns.contains("文章連結")) {
+      header.add("文章連結");
+    }
+    if(_selectedColumns.contains("創作者名稱")) {
+      header.add("創作者名稱");
+    }
+    if(_selectedColumns.contains("創作者主頁連結")) {
+      header.add("創作者主頁連結");
+    }
+    if(_selectedColumns.contains("IG")) {
+      header.add("IG");
+    }
+    if(_selectedColumns.contains("Email")) {
+      header.add("Email");
+    }
+    if(_selectedColumns.contains("觀看數")) {
+      header.add("觀看數");
+    }
+    if(_selectedColumns.contains("留言數")) {
+      header.add("留言數");
+    }
+
+    return const ListToCsvConverter().convert(
+      [header, ..._originalData.where((element) => _selectedItems.contains(element.link)).map((e) {
+        List<String> item = [];
+        if(_selectedColumns.contains("發布日期")) {
+          item.add(DateFormat('yyyy/MM/dd').format(e.createdAt));
+        }
+        if(_selectedColumns.contains("文章標題")) {
+          item.add(e.title);
+        }
+        if(_selectedColumns.contains("文章連結")) {
+          item.add(e.link);
+        }
+        if(_selectedColumns.contains("創作者名稱")) {
+          item.add(e.displayName);
+        }
+        if(_selectedColumns.contains("創作者主頁連結")) {
+          item.add('https://www.pixnet.net/pcard/${e.memberUniqid}');
+        }
+        if(_selectedColumns.contains("IG")) {
+          item.add(e.ig);
+        }
+        if(_selectedColumns.contains("Email")) {
+          item.add(e.email);
+        }
+        if(_selectedColumns.contains("觀看數")) {
+          item.add(e.hit.toString());
+        }
+        if(_selectedColumns.contains("留言數")) {
+          item.add(e.replyCount.toString());
+        }
+        return item;
+      })]
+      
+    );
+  }
+
   // Dealing with the data to be displayed
   void onDisplayedDataSort (int columnIndex, bool isAscending) {
     _isSortByRelevance = false;
