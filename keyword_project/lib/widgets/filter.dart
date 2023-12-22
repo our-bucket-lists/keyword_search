@@ -164,10 +164,10 @@ class PixnetFilter extends StatelessWidget {
         controller: titleFilterController,
         width: 200,
         onSubmitted: (String text) {
-          searchProvider.displayedData = text.isEmpty
-            ? searchProvider.originResults
-            : searchProvider.displayedData
-                .where((item) => item.title.toLowerCase().contains(text.toLowerCase())).toList();
+          // searchProvider.displayedData = text.isEmpty
+          //   ? searchProvider.originResults
+          //   : searchProvider.displayedData
+          //       .where((item) => item.title.toLowerCase().contains(text.toLowerCase())).toList();
         },
       ),
       FilterTextField(
@@ -175,10 +175,10 @@ class PixnetFilter extends StatelessWidget {
         controller: viewCountFilterController,
         width: 120,
         onSubmitted: (String text) {
-          searchProvider.displayedData = text.isEmpty
-            ? searchProvider.originResults
-            : searchProvider.displayedData
-                .where((item) => item.hit>=int.parse(text)).toList();
+          // searchProvider.displayedData = text.isEmpty
+          //   ? searchProvider.originResults
+          //   : searchProvider.displayedData
+          //       .where((item) => item.hit>=int.parse(text)).toList();
         },
       ),
       FilterTextField(
@@ -186,10 +186,10 @@ class PixnetFilter extends StatelessWidget {
         controller: commentCountFilterController,
         width: 120,
         onSubmitted: (String text) {
-          searchProvider.displayedData = text.isEmpty
-            ? searchProvider.originResults
-            : searchProvider.displayedData
-                .where((item) => item.replyCount>=int.parse(text)).toList();
+          // searchProvider.displayedData = text.isEmpty
+          //   ? searchProvider.originResults
+          //   : searchProvider.displayedData
+          //       .where((item) => item.replyCount>=int.parse(text)).toList();
         },
       ),
     ]);

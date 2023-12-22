@@ -60,26 +60,6 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
         return const YoutubeResultTable();
     }
   }
-  
-  @override
-  void initState() {
-    controller = AnimationController(
-      /// [AnimationController]s can be created with `vsync: this` because of
-      /// [TickerProviderStateMixin].
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..addListener(() {
-        setState(() {});
-      });
-    controller.repeat();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
 
   // Download and save CSV to your Device
   downloadCSV(String file, String fileNmae) async {
@@ -96,10 +76,54 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
   }
 
   @override
+  void initState() {
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..addListener(() {
+        setState(() {});
+      });
+    controller.repeat();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    var pixnetProvider = context.read<PixnetSearchProvider>();
+    var pixnetProvider = context.watch<PixnetSearchProvider>();
     var instagramProvider = context.read<InstagramSearchProvider>();
     var youtubeProvider = context.watch<YoutubeSearchProvider>();
+
+    Widget getSelectedLoadingCounter() {
+      switch (_selectedPlatform.elementAt(0)) {
+        case Platforms.pixnet:
+          return Text(
+            '顯示${pixnetProvider.displayedData.length}筆/載入${pixnetProvider.originalData.length}筆',
+            style: Theme.of(context).textTheme.labelMedium,
+          );
+        case Platforms.instagram:
+          return Text(
+            '',
+            style: Theme.of(context).textTheme.labelMedium,
+          );
+        case Platforms.youtube:
+          return Text(
+            '顯示${youtubeProvider.displayedData.length}筆/載入${youtubeProvider.originalData.length}筆',
+            style: Theme.of(context).textTheme.labelMedium,
+          );
+        default:
+          return Text(
+            '顯示${youtubeProvider.displayedData.length}筆/載入${youtubeProvider.originalData.length}筆',
+            style: Theme.of(context).textTheme.labelMedium,
+          );
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
@@ -130,7 +154,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       log('Search Keyword: $value');
                       pixnetProvider.searchText = instagramProvider.searchText = youtubeProvider.searchText = value;
                       try {
-                        await youtubeProvider.search();
+                        await pixnetProvider.search();
                       } finally {
                         setState(() {
                           _isLoading = false;
@@ -179,7 +203,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       segments: const <ButtonSegment<Platforms>>[
                         ButtonSegment<Platforms>(value: Platforms.youtube, label: Text('YouTube')),
                         // ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
-                        // ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
+                        ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
                       ],
                       selected: _selectedPlatform,
                       onSelectionChanged: (Set<Platforms> newSelection) {
@@ -259,7 +283,19 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                 '載入更多',
                 style: Theme.of(context).textTheme.labelMedium,
               ),
-              onPressed: () => youtubeProvider.onLoadMore(),
+              onPressed: () {
+                switch (_selectedPlatform.elementAt(0)) {
+                  case Platforms.pixnet:
+                    pixnetProvider.onLoadMore();
+                    break;
+                  case Platforms.instagram:
+                    break;
+                  case Platforms.youtube:
+                    youtubeProvider.onLoadMore();
+                  default:
+                    break;
+                }
+              },
             ):Container(),
           ),
           Container(
@@ -271,10 +307,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             ),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(
-                '顯示${youtubeProvider.displayedData.length}筆/載入${youtubeProvider.originalData.length}筆',
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
+              child:  getSelectedLoadingCounter(),
             ),
           )
         ]

@@ -7,62 +7,95 @@ import 'package:http/http.dart' as http;
 import 'package:keyword_project/modles/pixnet_search_model.dart';
 
 class PixnetSearchProvider extends ChangeNotifier {
-  static const apiEndpoint = 'ec2-13-210-189-82.ap-southeast-2.compute.amazonaws.com:5000';
-
-  bool isLoading = true;
-  String error = '';
-  PixnetSearch searchResults = PixnetSearch(
-      error: false,
-      data:
-          Data(results: [], page: 0, perPage: 0, totalPage: 0, totalFeeds: 0));
+  // For API request
+  static const _apiEndpoint = 'ec2-13-210-189-82.ap-southeast-2.compute.amazonaws.com:5000';
   String _searchText = '';
-  List<Feed> _currentResults = [];
+  int _maxPage = 0;
+  int _currentPage = 0;
 
+  // For API response
+  PixnetSearch _searchResults = PixnetSearch(
+      error: false,
+      data: Data(results: [], page: 0, perPage: 0, totalPage: 0, totalFeeds: 0));
+  
+  // For Data storage
+  var _originalData = <Feed>[];
+  var _displayedData = <Feed>[];
+
+  // Setter
   set searchText(String searchText) {
+    // For API request
     _searchText = searchText;
-    // Notify listeners, in case the new catalog provides information
-    // different from the previous one. For example, availability of an item
-    // might have changed.
+    _maxPage = 0;
+    _currentPage = 0;
+    // For API response
+    _searchResults = PixnetSearch(
+        error: false,
+        data: Data(results: [], page: 0, perPage: 0, totalPage: 0, totalFeeds: 0));
+  
+    // For Data storage
+    _originalData = <Feed>[];
+    _displayedData = <Feed>[];
     notifyListeners();
   }
 
-  List<Feed> get originResults => searchResults.data.results;
-  List<Feed> get displayedData => _currentResults;
+  // Geter
+  List<Feed> get originalData => _originalData;
+  List<Feed> get displayedData => _displayedData;
 
-  set displayedData(List<Feed> inputList) {
-    _currentResults = inputList;
-    // Notify listeners, in case the new catalog provides information
-    // different from the previous one. For example, availability of an item
-    // might have changed.
-    notifyListeners();
-  }
-
+  // Getting data via API
   search() async {
     if (_searchText.isNotEmpty) {
-      isLoading = true;
-      notifyListeners();
-
       log('Searching Started on Pixnet...');
-      await getSearchResultApi(keyword: _searchText);
+      _currentPage += 1;
+      await _getSearchResultApi();
       log('Searching Completed on Pixnet!');
+      log('Max Page = $_maxPage');
+      log('Current Page = $_currentPage');
 
-      isLoading = false;
       notifyListeners();
     }
   }
 
-  getSearchResultApi({String keyword = ''}) async {
-    var uri = Uri.http(apiEndpoint,'/api/v1/pixnet/media', {'keyword': keyword});
+  onLoadMore() async {
+    if (_currentPage<_maxPage) {
+      log('Loading more is started on Pixnet...');
+      _currentPage += 1;
+      await _getSearchResultApi();
+      log('Loading more is completed on Pixnet!');
+      log('Current Page = $_currentPage');
+
+      notifyListeners();
+    }
+  }
+
+  _getSearchResultApi() async {
+    List<Feed> currentResults = [];
+    var uri = Uri.http(
+      _apiEndpoint,
+      '/api/v1/pixnet/media', 
+      {
+        'keyword': _searchText,
+        'page': _currentPage.toString(),
+      }
+    );
     try {
       http.Response response = await http.get(uri);
       switch (response.statusCode) {
         case 200:
-          searchResults = pixnetSearchFromJson(response.body);
-          _currentResults =  List.from(searchResults.data.results);
+          _searchResults = pixnetSearchFromJson(response.body);
+          _currentPage = _searchResults.data.page;
+          _maxPage = _searchResults.data.totalPage;
+          currentResults =  List.from(_searchResults.data.results);
           await Future.wait(
-            _currentResults.map(
+            currentResults.map(
               (element) async {
-                var info = await getMorePixnetInfo(queryUrl: Uri.https('www.pixnet.net', '/pcard/${element.memberUniqid.toString()}/profile/info',));
+                var info = await getMorePixnetInfo(
+                  queryUrl: Uri.https(
+                    'www.pixnet.net', 
+                    '/pcard/${element.memberUniqid.toString()}/profile/info',
+                  )
+                );
                 element.email = info['email'];
                 element.ig = info['ig'];
               }
@@ -73,6 +106,9 @@ class PixnetSearchProvider extends ChangeNotifier {
             log('[ERROR] Http Request Execution Error: ${err.toString()}');
             throw Exception(err);
           });
+          _displayedData.addAll(currentResults);
+          _originalData.addAll(currentResults);
+          break;
         default:
           log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
           throw Exception(response.reasonPhrase);
@@ -85,7 +121,7 @@ class PixnetSearchProvider extends ChangeNotifier {
 
   getMorePixnetInfo({required Uri queryUrl}) async {
     var uri = Uri.http(
-      apiEndpoint,
+      _apiEndpoint,
       '/api/v1/pixnet/profile', 
       {'url': queryUrl.toString()}
     );

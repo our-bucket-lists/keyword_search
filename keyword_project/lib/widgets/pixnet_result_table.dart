@@ -7,9 +7,10 @@ import 'package:provider/provider.dart';
 
 import 'package:keyword_project/modles/pixnet_search_model.dart';
 import 'package:keyword_project/provider/pixnet_provider.dart';
+import 'package:keyword_project/widgets/infinite_scroll_controller.dart';
 
 class PixnetResultTable extends StatefulWidget {
-  const PixnetResultTable({Key? key}) : super(key: key);
+  const PixnetResultTable({super.key});
 
   @override
   State<PixnetResultTable> createState() => _PixnetResultTableState();
@@ -17,8 +18,6 @@ class PixnetResultTable extends StatefulWidget {
 
 class _PixnetResultTableState extends State<PixnetResultTable> {
   List<Feed>? filterData;
-  int rowsPerPage = 10;
-  int currentPage = 0;
   int sortedIndex = 0;
   List<bool> sortedColumn= [false, false, false, false, false, false, false];
   List<bool> selected =  List<bool>.generate(25 , (int index) => false);
@@ -71,10 +70,6 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
         }
     
     }
-  }
-
-  onUpdateTable() {
-
   }
 
   @override
@@ -134,13 +129,13 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
             DataCell(SizedBox(width: _columnWidth[5], child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].hit.toString()))),
             DataCell(SizedBox(width: _columnWidth[6], child: Text(overflow: TextOverflow.ellipsis,search.displayedData[index].replyCount.toString()))),
           ],
-          selected: selected[index],
-          onSelectChanged: (bool? value) {
-            log('Row #$value is selected');
-            setState(() {
-              selected[index] = value!;
-            });
-          },
+          // selected: selected[index],
+          // onSelectChanged: (bool? value) {
+          //   log('Row #$value is selected');
+          //   setState(() {
+          //     selected[index] = value!;
+          //   });
+          // },
         )
       ),
     );
@@ -151,6 +146,9 @@ class _PixnetResultTableState extends State<PixnetResultTable> {
       width: double.infinity,
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
+        controller: InfiniteListenerController(onLoadMore: () {
+          searchPixnet.onLoadMore();
+        }),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
