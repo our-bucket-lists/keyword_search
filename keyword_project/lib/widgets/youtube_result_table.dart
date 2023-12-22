@@ -14,8 +14,6 @@ class YoutubeResultTable extends StatefulWidget {
 }
 
 class _YoutubeResultTableState extends State<YoutubeResultTable> {
-  int rowsPerPage = 10;
-  int currentPage = 0;
   late List<bool> sortedColumn;
   final List<double> _columnWidth = [120, 288, 64, 64, 64, 120, 64, 160];
 
@@ -23,8 +21,6 @@ class _YoutubeResultTableState extends State<YoutubeResultTable> {
   void initState() {
     super.initState();
   }
-
-  TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {

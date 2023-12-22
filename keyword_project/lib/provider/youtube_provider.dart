@@ -1,10 +1,10 @@
 import 'dart:collection';
 import 'dart:developer';
 
-import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:csv/csv.dart';
 
 import 'package:keyword_project/modles/youtube_search_model.dart';
 import 'package:keyword_project/modles/youtube_channel_model.dart' as channel;
@@ -23,7 +23,6 @@ class YoutubeSearchProvider extends ChangeNotifier {
   final int _resultsPerPage = 50;
   String _searchText = '';
   String _nextPageToken = '';
-  int _maxPage = 0;
   int _currentPage = 0;
 
   // For API response
@@ -49,12 +48,14 @@ class YoutubeSearchProvider extends ChangeNotifier {
   int _sortedColumnIndex = 0;
   bool isLoadMoreDisplayed = false;
   
+  // For loading indicator
+  bool _isLoading = false;
+
   // Seter
   set searchText(String searchText) {
     // For API request
     _searchText = searchText;
     _nextPageToken = '';
-    _maxPage = 0;
     _currentPage = 0;
     notifyListeners();
 
@@ -81,6 +82,10 @@ class YoutubeSearchProvider extends ChangeNotifier {
     _isSortByRelevance = true;
     _sortedColumnIndex = 0;
     isLoadMoreDisplayed = false;
+
+    // For loading indicator
+    _isLoading = false;
+
     notifyListeners();
   }
   set isSortByRelevance(bool input) {
@@ -111,6 +116,10 @@ class YoutubeSearchProvider extends ChangeNotifier {
     _filterCriteria.mustSelected = input;
     notifyListeners();
   }
+  set isLoading(bool input) {
+    _isLoading = input;
+    notifyListeners();
+  }
 
   // Geter
   String get searchText => _searchText;
@@ -123,6 +132,7 @@ class YoutubeSearchProvider extends ChangeNotifier {
   bool get isSortByRelevance => _isSortByRelevance;
   bool get mustContainsEmail => _filterCriteria.mustContainsEmail;
   bool get mustSelected => _filterCriteria.mustSelected;
+  bool get isLoading => _isLoading;
   String get exportCsv {
     List<String> header = [];
     if(_selectedColumns.contains("發布日期")) {
@@ -281,20 +291,21 @@ class YoutubeSearchProvider extends ChangeNotifier {
   // Getting data via API
   search() async {
     if (_searchText.isNotEmpty) {
+      isLoading = true;
       log('Searching Started on YouTube...');
       _currentPage += 1;
       await _getSearchResultApi();
-      _maxPage = (_searchResults.pageInfo.totalResults/_resultsPerPage).ceil();
       log('Searching Completed on YouTube!');
-      log('Max Page = $_maxPage');
       log('Current Page = $_currentPage');
 
       notifyListeners();
+      isLoading = false;
     }
   }
 
   onLoadMore() async {
     if (_nextPageToken.isNotEmpty) {
+      isLoading = true;
       log('Loading more is started on YouTube...');
       _currentPage += 1;
       await _getSearchResultApi();
@@ -302,24 +313,25 @@ class YoutubeSearchProvider extends ChangeNotifier {
       log('Current Page = $_currentPage');
 
       notifyListeners();
+      isLoading = false;
     }
   }
 
   _getSearchResultApi() async {
     List<Item> currentResults = [];
+    var uri = Uri.https(
+      _apiEndpoint,
+      '/youtube/v3/search', 
+      {
+        'part': 'snippet',
+        'maxResults': '$_resultsPerPage',
+        'key': _youtubeApiKey.elementAt(_currentApiKeyIndex),
+        'type':'video',
+        'q': _searchText,
+        'pageToken' : _nextPageToken,
+      }
+    );
     try {
-      var uri = Uri.https(
-        _apiEndpoint,
-        '/youtube/v3/search', 
-        {
-          'part': 'snippet',
-          'maxResults': '$_resultsPerPage',
-          'key': _youtubeApiKey.elementAt(_currentApiKeyIndex),
-          'type':'video',
-          'q': _searchText,
-          'pageToken' : _nextPageToken,
-        }
-      );
       http.Response response = await http.get(uri);
       switch (response.statusCode) {
         case 200:

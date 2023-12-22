@@ -29,11 +29,11 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
-  late AnimationController controller;
-  bool determinate = false;
   Set<Platforms> _selectedPlatform = <Platforms>{Platforms.youtube};
-  bool _isLoading = false;
-  Set<String> youtubeSelectedItems = {};
+
+  late AnimationController pixnetProgressIndicator;
+  late AnimationController youtubeProgressIndicator;
+  late AnimationController instagramProgressIndicator;
 
   Widget _getSelectedFilter() {
     switch (_selectedPlatform.elementAt(0)) {
@@ -41,44 +41,20 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
         return const PixnetFilter();
       case Platforms.instagram:
         return Container();
-      case Platforms.youtube:
-        return const YoutubeFilter();
       default:
         return const YoutubeFilter();
     }
   }
-
+  
   Widget _getSelectedTable() {
     switch (_selectedPlatform.elementAt(0)) {
       case Platforms.pixnet:
         return const PixnetResultTable();
       case Platforms.instagram:
         return const InstagramResultTable();
-      case Platforms.youtube:
-        return const YoutubeResultTable();
       default:
         return const YoutubeResultTable();
     }
-  }
-  
-  @override
-  void initState() {
-    controller = AnimationController(
-      /// [AnimationController]s can be created with `vsync: this` because of
-      /// [TickerProviderStateMixin].
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..addListener(() {
-        setState(() {});
-      });
-    controller.repeat();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
   }
 
   // Download and save CSV to your Device
@@ -96,10 +72,178 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
   }
 
   @override
+  void initState() {
+    pixnetProgressIndicator = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..addListener(() {
+        setState(() {});
+      });
+    pixnetProgressIndicator.repeat();
+    youtubeProgressIndicator = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..addListener(() {
+        setState(() {});
+      });
+    youtubeProgressIndicator.repeat();
+    instagramProgressIndicator = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..addListener(() {
+        setState(() {});
+      });
+    instagramProgressIndicator.repeat();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    pixnetProgressIndicator.dispose();
+    youtubeProgressIndicator.dispose();
+    instagramProgressIndicator.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    var pixnetProvider = context.read<PixnetSearchProvider>();
-    var instagramProvider = context.read<InstagramSearchProvider>();
+    var pixnetProvider = context.watch<PixnetSearchProvider>();
+    var instagramProvider = context.watch<InstagramSearchProvider>();
     var youtubeProvider = context.watch<YoutubeSearchProvider>();
+
+    Widget getSelectedLoadingCounter() {
+      switch (_selectedPlatform.elementAt(0)) {
+        case Platforms.pixnet:
+          return Text(
+            '顯示${pixnetProvider.displayedData.length}筆/載入${pixnetProvider.originalData.length}筆',
+            style: Theme.of(context).textTheme.labelMedium,
+          );
+        case Platforms.instagram:
+          return Text(
+            '',
+            style: Theme.of(context).textTheme.labelMedium,
+          );
+        default:
+          return Text(
+            '顯示${youtubeProvider.displayedData.length}筆/載入${youtubeProvider.originalData.length}筆',
+            style: Theme.of(context).textTheme.labelMedium,
+          );
+      }
+    }
+
+    Widget getSelectedExportButton() {
+      switch (_selectedPlatform.elementAt(0)) {
+        case Platforms.pixnet:
+          return FilledButton.tonalIcon(
+            onPressed: () => showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => PixnetExportDialog(
+                provider: pixnetProvider,
+                onSubmitted: () async {
+                  log(pixnetProvider.selectedColumns.toString());
+                  Navigator.pop(context);
+                  await downloadCSV(pixnetProvider.exportCsv, 'Pixnet_${pixnetProvider.searchText}_${DateFormat('yyMMddhhmmss').format(DateTime.now())}');
+                },
+              )
+            ),
+            label: Text('匯出', style: Theme.of(context).textTheme.labelMedium,),
+            icon: const Icon(Icons.file_download,),
+          );
+        case Platforms.instagram:
+          return Container();
+        default:
+          return FilledButton.tonalIcon(
+            onPressed: () => showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => YoutubeExportDialog(
+                provider: youtubeProvider,
+                onSubmitted: () async {
+                  log(youtubeProvider.selectedColumns.toString());
+                  Navigator.pop(context);
+                  await downloadCSV(youtubeProvider.exportCsv, 'YouTube_${youtubeProvider.searchText}_${DateFormat('yyMMddhhmmss').format(DateTime.now())}');
+                },
+              )
+            ),
+            label: Text('匯出', style: Theme.of(context).textTheme.labelMedium,),
+            icon: const Icon(Icons.file_download,),
+          );
+      }
+    }
+
+    Widget getSelectedProgressIndicator() {
+      switch (_selectedPlatform.elementAt(0)) {
+        case Platforms.pixnet:
+          return LinearProgressIndicator(value: pixnetProvider.isLoading?pixnetProgressIndicator.value:0,);
+        case Platforms.instagram:
+          return LinearProgressIndicator(value: false?instagramProgressIndicator.value:0,);
+        default:
+          return LinearProgressIndicator(value: youtubeProvider.isLoading?youtubeProgressIndicator.value:0,);
+      }
+    }
+
+    Widget getSelectedLoadMoreButton() {
+      switch (_selectedPlatform.elementAt(0)) {
+        case Platforms.pixnet:
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+            ),
+            child: pixnetProvider.originalData.isNotEmpty&&pixnetProvider.displayedData.length<12?
+            FilledButton.tonal(
+              child: Text(
+                '載入更多',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              onPressed: () {
+                switch (_selectedPlatform.elementAt(0)) {
+                  case Platforms.pixnet:
+                    pixnetProvider.onLoadMore();
+                    break;
+                  case Platforms.instagram:
+                    break;
+                  case Platforms.youtube:
+                    pixnetProvider.onLoadMore();
+                  default:
+                    break;
+                }
+              },
+            ):Container(),
+          );
+        case Platforms.instagram:
+          return LinearProgressIndicator(value: false?instagramProgressIndicator.value:0,);
+        default:
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+            ),
+            child: youtubeProvider.originalData.isNotEmpty&&youtubeProvider.displayedData.length<12?
+            FilledButton.tonal(
+              child: Text(
+                '載入更多',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              onPressed: () {
+                switch (_selectedPlatform.elementAt(0)) {
+                  case Platforms.pixnet:
+                    pixnetProvider.onLoadMore();
+                    break;
+                  case Platforms.instagram:
+                    break;
+                  case Platforms.youtube:
+                    youtubeProvider.onLoadMore();
+                  default:
+                    break;
+                }
+              },
+            ):Container(),
+          );
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
@@ -124,17 +268,16 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                   width: 640,
                   child: PostSearchBar(
                     onSubmitted: (value) async {
-                      setState(() {
-                        _isLoading = true;
-                      });
                       log('Search Keyword: $value');
                       pixnetProvider.searchText = instagramProvider.searchText = youtubeProvider.searchText = value;
                       try {
-                        await youtubeProvider.search();
+                        pixnetProvider.search();
                       } finally {
-                        setState(() {
-                          _isLoading = false;
-                        });
+                        try {
+                          youtubeProvider.search();
+                        } finally {
+
+                        }
                       }
                       // try {
                       //   pixnetProvider.search();
@@ -179,7 +322,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       segments: const <ButtonSegment<Platforms>>[
                         ButtonSegment<Platforms>(value: Platforms.youtube, label: Text('YouTube')),
                         // ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
-                        // ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
+                        ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
                       ],
                       selected: _selectedPlatform,
                       onSelectionChanged: (Set<Platforms> newSelection) {
@@ -204,36 +347,14 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: FilledButton.tonalIcon(
-                      onPressed: () => showDialog<String>(
-                        context: context,
-                        builder: (BuildContext context) => YoutubeExportDialog(
-                          provider: youtubeProvider,
-                          onSubmitted: () async {
-                            log(youtubeProvider.selectedColumns.toString());
-                            Navigator.pop(context);
-                            await downloadCSV(youtubeProvider.exportCsv, 'YouTube_${youtubeProvider.searchText}_${DateFormat('yyMMddhhmmss').format(DateTime.now())}');
-                          },
-                        )
-                      ),
-                      label: Text(
-                        '匯出',
-                        style: Theme.of(context).textTheme.labelMedium,
-                      ),
-                      icon: const Icon(
-                        Icons.file_download,
-                      ),
-                    ),
+                    child: getSelectedExportButton(),
                   )
                 ],
               ),
             ),
           ),
           // Progress Indicator
-          LinearProgressIndicator(
-            value: _isLoading?
-              controller.value:0,
-          ),
+          getSelectedProgressIndicator(),
           // Content
           Expanded(
             child: Container(
@@ -247,21 +368,9 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
               ),
             )
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-            ),
-            child: youtubeProvider.originalData.isNotEmpty&&youtubeProvider.displayedData.length<12?
-            FilledButton.tonal(
-              child: Text(
-                '載入更多',
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-              onPressed: () => youtubeProvider.onLoadMore(),
-            ):Container(),
-          ),
+          // Load More
+          getSelectedLoadMoreButton(),
+          // Counter
           Container(
             padding: const EdgeInsets.symmetric(vertical: 4),
             alignment: Alignment.center,
@@ -271,10 +380,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             ),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(
-                '顯示${youtubeProvider.displayedData.length}筆/載入${youtubeProvider.originalData.length}筆',
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
+              child:  getSelectedLoadingCounter(),
             ),
           )
         ]
