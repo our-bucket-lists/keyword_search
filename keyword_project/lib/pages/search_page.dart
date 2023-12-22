@@ -181,6 +181,69 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
       }
     }
 
+    Widget getSelectedLoadMoreButton() {
+      switch (_selectedPlatform.elementAt(0)) {
+        case Platforms.pixnet:
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+            ),
+            child: pixnetProvider.originalData.isNotEmpty&&pixnetProvider.displayedData.length<12?
+            FilledButton.tonal(
+              child: Text(
+                '載入更多',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              onPressed: () {
+                switch (_selectedPlatform.elementAt(0)) {
+                  case Platforms.pixnet:
+                    pixnetProvider.onLoadMore();
+                    break;
+                  case Platforms.instagram:
+                    break;
+                  case Platforms.youtube:
+                    pixnetProvider.onLoadMore();
+                  default:
+                    break;
+                }
+              },
+            ):Container(),
+          );
+        case Platforms.instagram:
+          return LinearProgressIndicator(value: false?instagramProgressIndicator.value:0,);
+        default:
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+            ),
+            child: youtubeProvider.originalData.isNotEmpty&&youtubeProvider.displayedData.length<12?
+            FilledButton.tonal(
+              child: Text(
+                '載入更多',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              onPressed: () {
+                switch (_selectedPlatform.elementAt(0)) {
+                  case Platforms.pixnet:
+                    pixnetProvider.onLoadMore();
+                    break;
+                  case Platforms.instagram:
+                    break;
+                  case Platforms.youtube:
+                    youtubeProvider.onLoadMore();
+                  default:
+                    break;
+                }
+              },
+            ):Container(),
+          );
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
@@ -305,33 +368,9 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
               ),
             )
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-            ),
-            child: youtubeProvider.originalData.isNotEmpty&&youtubeProvider.displayedData.length<12?
-            FilledButton.tonal(
-              child: Text(
-                '載入更多',
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-              onPressed: () {
-                switch (_selectedPlatform.elementAt(0)) {
-                  case Platforms.pixnet:
-                    pixnetProvider.onLoadMore();
-                    break;
-                  case Platforms.instagram:
-                    break;
-                  case Platforms.youtube:
-                    youtubeProvider.onLoadMore();
-                  default:
-                    break;
-                }
-              },
-            ):Container(),
-          ),
+          // Load More
+          getSelectedLoadMoreButton(),
+          // Counter
           Container(
             padding: const EdgeInsets.symmetric(vertical: 4),
             alignment: Alignment.center,
