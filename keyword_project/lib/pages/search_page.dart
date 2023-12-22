@@ -130,7 +130,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       log('Search Keyword: $value');
                       pixnetProvider.searchText = instagramProvider.searchText = youtubeProvider.searchText = value;
                       try {
-                        await youtubeProvider.search();
+                        await pixnetProvider.search();
                       } finally {
                         setState(() {
                           _isLoading = false;
@@ -179,7 +179,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       segments: const <ButtonSegment<Platforms>>[
                         ButtonSegment<Platforms>(value: Platforms.youtube, label: Text('YouTube')),
                         // ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
-                        // ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
+                        ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
                       ],
                       selected: _selectedPlatform,
                       onSelectionChanged: (Set<Platforms> newSelection) {
