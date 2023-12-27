@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:keyword_project/provider/ig_provider.dart';
 import 'package:keyword_project/provider/pixnet_provider.dart';
 import 'package:keyword_project/provider/youtube_provider.dart';
 import 'package:provider/provider.dart';
@@ -250,6 +251,114 @@ class _PixnetFilterState extends State<PixnetFilter> {
                 searchProvider.viewCountLowerBound = text;
               } else {
                 searchProvider.viewCountLowerBound = '0';
+              }
+              searchProvider.onDisplayedDataFilterSort();
+            },
+          ),
+          FilterTextField(
+            hitText: '留言數>=',
+            controller: commentCountFilterController,
+            width: 88,
+            onSubmitted: (String text) {
+              if (text.isNotEmpty && isNumeric(text)) {
+                searchProvider.commentCountLowerBound = text;
+              } else {
+                searchProvider.commentCountLowerBound = '0';
+              }
+              searchProvider.onDisplayedDataFilterSort();
+            },
+          ),
+        ]
+      )
+    );
+  }
+}
+
+class InstagramFilter extends StatefulWidget {
+  const InstagramFilter({super.key});
+
+  @override
+  State<InstagramFilter> createState() => _InstagramFilterState();
+}
+
+class _InstagramFilterState extends State<InstagramFilter> {
+  Set<ExerciseFilter> filters = <ExerciseFilter>{};
+
+  final titleFilterController = TextEditingController();
+  final likeCountFilterController = TextEditingController();
+  final commentCountFilterController = TextEditingController();
+
+  @override
+  void dispose() {
+    titleFilterController.dispose();
+    likeCountFilterController.dispose();
+    commentCountFilterController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var searchProvider = context.watch<InstagramSearchProvider>();
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      child: Wrap(
+        spacing: 4,
+        children: [
+          SizedBox(
+            height: 32,
+            width: 32,
+            child: IconButton(
+              icon: const Icon(Icons.restart_alt_outlined, size: 16,),
+              tooltip: '重置篩選設定',
+              onPressed: () {
+                searchProvider.isSortByRelevance = true;
+                searchProvider.mustSelected = false;
+                titleFilterController.clear();
+                searchProvider.titleContainedText = '';
+                likeCountFilterController.clear();
+                searchProvider.likeCountLowerBound = '0';
+                commentCountFilterController.clear();
+                searchProvider.commentCountLowerBound = '0';
+                searchProvider.onDisplayedDataFilterSort();
+              },
+            ),
+          ),
+          MyFilterChip(
+            hitText: '依相關度排序', 
+            selected: searchProvider.isSortByRelevance, 
+            onSelected: (bool selected) => searchProvider.onDisplayedDataSortByRelevance(),
+          ),
+          MyFilterChip(
+            hitText: '已選取', 
+            selected: searchProvider.mustSelected, 
+            onSelected: (bool selected) {
+              searchProvider.mustSelected = selected;
+              searchProvider.onDisplayedDataFilterSort();
+            }
+          ),
+          FilterTextField(
+            hitText: '標題包含',
+            controller: titleFilterController,
+            width: 200,
+            onSubmitted: (String text) {
+              if (text.isNotEmpty) {
+                searchProvider.titleContainedText = text;
+              } else {
+                searchProvider.titleContainedText = '';
+              }
+              searchProvider.onDisplayedDataFilterSort();
+            },
+          ),
+          FilterTextField(
+            hitText: '喜歡數>=',
+            controller: likeCountFilterController,
+            width:88,
+            onSubmitted: (String text) {
+              if (text.isNotEmpty && isNumeric(text)) {
+                searchProvider.likeCountLowerBound = text;
+              } else {
+                searchProvider.likeCountLowerBound = '0';
               }
               searchProvider.onDisplayedDataFilterSort();
             },

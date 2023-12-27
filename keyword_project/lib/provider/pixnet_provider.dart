@@ -264,30 +264,38 @@ class PixnetSearchProvider extends ChangeNotifier {
   // Getting data via API
   search() async {
     if (_searchText.isNotEmpty) {
-      isLoading = true;
-      log('Searching Started on Pixnet...');
-      _currentPage += 1;
-      await _getSearchResultApi();
-      log('Searching Completed on Pixnet!');
-      log('Max Page = $_maxPage');
-      log('Current Page = $_currentPage');
+      try {
+        isLoading = true;
+        log('Searching Started on Pixnet...');
+        _currentPage += 1;
+        await _getSearchResultApi();
 
-      notifyListeners();
-      isLoading = false;
+        log('Searching Completed on Pixnet!');
+        log('Max Page = $_maxPage');
+        log('Current Page = $_currentPage');
+
+        notifyListeners();
+      } finally {
+        isLoading = false;
+      }
     }
   }
 
   onLoadMore() async {
     if (_currentPage<_maxPage) {
-      isLoading = true;
-      log('Loading more is started on Pixnet...');
-      _currentPage += 1;
-      await _getSearchResultApi();
-      log('Loading more is completed on Pixnet!');
-      log('Current Page = $_currentPage');
+      try {
+        isLoading = true;
+        log('Loading more is started on Pixnet...');
+        _currentPage += 1;
+        await _getSearchResultApi();
+        
+        log('Loading more is completed on Pixnet!');
+        log('Current Page = $_currentPage');
 
-      notifyListeners();
-      isLoading = false;
+        notifyListeners();
+      } finally { 
+        isLoading = false;
+      }
     }
   }
 
