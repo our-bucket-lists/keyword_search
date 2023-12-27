@@ -15,7 +15,7 @@ class InstagramSearchProvider extends ChangeNotifier {
   // For API request
   static const _apiEndpoint = 'graph.facebook.com';
   static const _userId = '17841400502414397';
-  static const _token = 'EAAYs6H9ZCiEEBO30S4lQk50jef11ophLHtYu1wVum5qFYvDJCf31aDuXeqkCmRZBj64IlZBiZAkf8Cqc1I7ke49jCAIIFfZAg4ly9qGSF6dX04KKkKtNxT7qLyMaRpP1mWG6cllnv4WPq1Sc4B2wWV7Ih6X0MMZAzfto6KNhZAU8VvvEKGSHMVGeLUmFqZB9VmdFGcLEBthQZB8OvLyJJzgZDZD';
+  static const _token = 'EAAYs6H9ZCiEEBO9ghj6OlsHCRjIv8Tf0XzZBFCnUKfgBsIGZCVVIVRQflWSEYYY3XgLDAvkUpZAMpdUXL4z4BWxY95UfD8sz6vWR3NP58MVAPhoxb2iFBQZBfL3YJXgToWpcN7urp7MnHVgonpcE4HljBUziegv42r4446EZB15xmktZAX9LXvE1mgS5bynxQexY8hgzADmmKQa05gIhlUZD';
   String _searchText = '';
   String _nextPageLink = '';
   int _currentPage = 0;
