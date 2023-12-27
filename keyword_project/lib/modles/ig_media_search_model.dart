@@ -47,11 +47,11 @@ class Datum {
     });
 
     factory Datum.fromJson(Map<String, dynamic> data) => Datum(
-        caption: data["caption"],
-        commentsCount: data["comments_count"],
+        caption: data.containsKey("caption")?data["caption"]:"",
+        commentsCount: data.containsKey("comments_count")?data["comments_count"]:"",
         likeCount: data.containsKey("like_count")?data["like_count"]:0,
-        permalink: data["permalink"],
-        timestamp: DateTime.parse(data["timestamp"]),
+        permalink: data.containsKey("permalink")?data["permalink"]:"",
+        timestamp: data.containsKey("timestamp")?DateTime.parse(data["timestamp"]):DateTime.now(),
         id: data["id"],
     );
 

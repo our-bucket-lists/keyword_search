@@ -291,29 +291,35 @@ class YoutubeSearchProvider extends ChangeNotifier {
   // Getting data via API
   search() async {
     if (_searchText.isNotEmpty) {
+      try {
       isLoading = true;
       log('Searching Started on YouTube...');
       _currentPage += 1;
       await _getSearchResultApi();
+
       log('Searching Completed on YouTube!');
       log('Current Page = $_currentPage');
-
       notifyListeners();
-      isLoading = false;
+      } finally {
+       isLoading = false;
+      }
     }
   }
 
   onLoadMore() async {
     if (_nextPageToken.isNotEmpty) {
-      isLoading = true;
-      log('Loading more is started on YouTube...');
-      _currentPage += 1;
-      await _getSearchResultApi();
-      log('Loading more is completed on YouTube!');
-      log('Current Page = $_currentPage');
+      try {
+        isLoading = true;
+        log('Loading more is started on YouTube...');
+        _currentPage += 1;
+        await _getSearchResultApi();
+        log('Loading more is completed on YouTube!');
+        log('Current Page = $_currentPage');
 
-      notifyListeners();
-      isLoading = false;
+        notifyListeners();
+      } finally {
+       isLoading = false;
+      }
     }
   }
 

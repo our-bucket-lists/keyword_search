@@ -32,7 +32,7 @@ class Datum {
     });
 
     factory Datum.fromJson(Map<String, dynamic> json) => Datum(
-        id: json["id"],
+        id: json.containsKey("id")?json["id"]:"",
     );
 
     Map<String, dynamic> toJson() => {

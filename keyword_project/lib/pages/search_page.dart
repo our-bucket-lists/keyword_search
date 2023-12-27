@@ -40,7 +40,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
       case Platforms.pixnet:
         return const PixnetFilter();
       case Platforms.instagram:
-        return Container();
+        return const InstagramFilter();
       default:
         return const YoutubeFilter();
     }
@@ -120,7 +120,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
           );
         case Platforms.instagram:
           return Text(
-            '',
+            '顯示${instagramProvider.displayedData.length}筆/載入${instagramProvider.originalData.length}筆',
             style: Theme.of(context).textTheme.labelMedium,
           );
         default:
@@ -138,7 +138,6 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             onPressed: () => showDialog<String>(
               context: context,
               builder: (BuildContext context) => PixnetExportDialog(
-                provider: pixnetProvider,
                 onSubmitted: () async {
                   log(pixnetProvider.selectedColumns.toString());
                   Navigator.pop(context);
@@ -150,13 +149,25 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             icon: const Icon(Icons.file_download,),
           );
         case Platforms.instagram:
-          return Container();
+          return FilledButton.tonalIcon(
+            onPressed: () => showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => InstagramExportDialog(
+                onSubmitted: () async {
+                  log(instagramProvider.selectedColumns.toString());
+                  Navigator.pop(context);
+                  await downloadCSV(instagramProvider.exportCsv, 'Instagram_${instagramProvider.searchText}_${DateFormat('yyMMddhhmmss').format(DateTime.now())}');
+                },
+              )
+            ),
+            label: Text('匯出', style: Theme.of(context).textTheme.labelMedium,),
+            icon: const Icon(Icons.file_download,),
+          );
         default:
           return FilledButton.tonalIcon(
             onPressed: () => showDialog<String>(
               context: context,
               builder: (BuildContext context) => YoutubeExportDialog(
-                provider: youtubeProvider,
                 onSubmitted: () async {
                   log(youtubeProvider.selectedColumns.toString());
                   Navigator.pop(context);
@@ -175,7 +186,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
         case Platforms.pixnet:
           return LinearProgressIndicator(value: pixnetProvider.isLoading?pixnetProgressIndicator.value:0,);
         case Platforms.instagram:
-          return LinearProgressIndicator(value: false?instagramProgressIndicator.value:0,);
+          return LinearProgressIndicator(value: instagramProvider.isLoading?instagramProgressIndicator.value:0,);
         default:
           return LinearProgressIndicator(value: youtubeProvider.isLoading?youtubeProgressIndicator.value:0,);
       }
@@ -212,7 +223,34 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             ):Container(),
           );
         case Platforms.instagram:
-          return LinearProgressIndicator(value: false?instagramProgressIndicator.value:0,);
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+            ),
+            child: instagramProvider.originalData.isNotEmpty&&instagramProvider.displayedData.length<12?
+            FilledButton.tonal(
+              child: Text(
+                '載入更多',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              onPressed: () {
+                switch (_selectedPlatform.elementAt(0)) {
+                  case Platforms.pixnet:
+                    pixnetProvider.onLoadMore();
+                    break;
+                  case Platforms.instagram:
+                    instagramProvider.onLoadMore();
+                    break;
+                  case Platforms.youtube:
+                    youtubeProvider.onLoadMore();
+                  default:
+                    break;
+                }
+              },
+            ):Container(),
+          );
         default:
           return Container(
             padding: const EdgeInsets.symmetric(vertical: 4),
@@ -274,30 +312,16 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                         pixnetProvider.search();
                       } finally {
                         try {
-                          youtubeProvider.search();
+                          instagramProvider.search();
                         } finally {
+                          try {
+                            youtubeProvider.search();
+                          }
+                          finally {
 
+                          }
                         }
                       }
-                      // try {
-                      //   pixnetProvider.search();
-                      // } catch (_) {
-                      //   rethrow;
-                      // } finally {
-                      //   try {
-                      //     instagramProvider.search();
-                      //   } catch (_) {
-                      //     rethrow;
-                      //   } finally {
-                      //     try {
-                      //       youtubeProvider.search();
-                      //     } catch (_) {
-                      //       rethrow;
-                      //     } finally {
-                      //       resultTable.isLoading = false;
-                      //     }
-                      //   }
-                      // }
                     },
                   ),
                 ),
@@ -316,12 +340,13 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
+                  // Table Switch
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                     child: SegmentedButton<Platforms>(
                       segments: const <ButtonSegment<Platforms>>[
                         ButtonSegment<Platforms>(value: Platforms.youtube, label: Text('YouTube')),
-                        // ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
+                        ButtonSegment<Platforms>(value: Platforms.instagram, label: Text('Instagram')),
                         ButtonSegment<Platforms>(value: Platforms.pixnet, label: Text('Pixnet')),
                       ],
                       selected: _selectedPlatform,
@@ -342,9 +367,11 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
+                  // Filter
                   Expanded(
                     child: _getSelectedFilter(),
                   ),
+                  // Export
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: getSelectedExportButton(),

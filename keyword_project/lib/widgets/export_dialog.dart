@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:keyword_project/provider/ig_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:keyword_project/provider/pixnet_provider.dart';
@@ -6,12 +7,10 @@ import 'package:keyword_project/provider/youtube_provider.dart';
 
 class YoutubeExportDialog extends StatelessWidget {
   final Function() onSubmitted;
-  final dynamic provider;
 
   const YoutubeExportDialog({
     super.key, 
-    required this.onSubmitted, 
-    required this.provider,
+    required this.onSubmitted,
   });
   @override
   Widget build(BuildContext context) {
@@ -77,20 +76,20 @@ class YoutubeExportOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var youtubeProvider = context.watch<YoutubeSearchProvider>();
+    var provider = context.watch<YoutubeSearchProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       child: Row(
         children: [
           Checkbox(
-            value: youtubeProvider.selectedColumns.contains(text),
+            value: provider.selectedColumns.contains(text),
             onChanged: (bool? value) {
               switch (value) {
                 case true:
-                  youtubeProvider.onAddToSelectedColumns(text);
+                  provider.onAddToSelectedColumns(text);
                   break;
                 default:
-                  youtubeProvider.onRemoveFromSelectedColumns(text);
+                  provider.onRemoveFromSelectedColumns(text);
                   break;
               }
             },
@@ -104,12 +103,10 @@ class YoutubeExportOption extends StatelessWidget {
 
 class PixnetExportDialog extends StatelessWidget {
   final Function() onSubmitted;
-  final dynamic provider;
 
   const PixnetExportDialog({
     super.key, 
-    required this.onSubmitted, 
-    required this.provider,
+    required this.onSubmitted,
   });
   @override
   Widget build(BuildContext context) {
@@ -175,20 +172,20 @@ class PixnetExportOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var youtubeProvider = context.watch<PixnetSearchProvider>();
+    var provider = context.watch<PixnetSearchProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       child: Row(
         children: [
           Checkbox(
-            value: youtubeProvider.selectedColumns.contains(text),
+            value: provider.selectedColumns.contains(text),
             onChanged: (bool? value) {
               switch (value) {
                 case true:
-                  youtubeProvider.onAddToSelectedColumns(text);
+                  provider.onAddToSelectedColumns(text);
                   break;
                 default:
-                  youtubeProvider.onRemoveFromSelectedColumns(text);
+                  provider.onRemoveFromSelectedColumns(text);
                   break;
               }
             },
@@ -199,3 +196,97 @@ class PixnetExportOption extends StatelessWidget {
     );
   }
 }
+
+class InstagramExportDialog extends StatelessWidget {
+  final Function() onSubmitted;
+
+  const InstagramExportDialog({
+    super.key, 
+    required this.onSubmitted,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Instagram 輸出欄位'),
+      content: Table(
+        border: TableBorder.all(
+          //color: Colors.white,
+          style: BorderStyle.none
+        ),
+        columnWidths: const <int, TableColumnWidth>{
+          0: IntrinsicColumnWidth(),
+          1: IntrinsicColumnWidth(),
+          2: IntrinsicColumnWidth(),
+          3: IntrinsicColumnWidth(),
+        },
+        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+        children: <TableRow>[
+          const TableRow(
+            children: <Widget>[
+              InstagramExportOption(text: "發布日期",),
+              InstagramExportOption(text: "文章摘要",),
+              InstagramExportOption(text: "文章連結",),
+              InstagramExportOption(text: "帳號",),
+            ] 
+          ), 
+          TableRow( 
+            children: <Widget>[
+              const InstagramExportOption(text: "主頁連結",),
+              const InstagramExportOption(text: "喜歡數",),
+              const InstagramExportOption(text: "留言數",),
+              Container(),
+            ],
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text('取消'),
+        ),
+        TextButton(
+          onPressed: onSubmitted, 
+          child: const Text('匯出'),
+        ),
+      ],
+    );
+  }
+}
+
+class InstagramExportOption extends StatelessWidget {
+  final String text;
+
+  const InstagramExportOption({
+    super.key, 
+    required this.text, 
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    var provider = context.watch<InstagramSearchProvider>();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      child: Row(
+        children: [
+          Checkbox(
+            value: provider.selectedColumns.contains(text),
+            onChanged: (bool? value) {
+              switch (value) {
+                case true:
+                  provider.onAddToSelectedColumns(text);
+                  break;
+                default:
+                  provider.onRemoveFromSelectedColumns(text);
+                  break;
+              }
+            },
+          ), 
+          Text(text),
+        ],
+      ),
+    );
+  }
+}
+
