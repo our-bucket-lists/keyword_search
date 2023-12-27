@@ -308,20 +308,19 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                     onSubmitted: (value) async {
                       log('Search Keyword: $value');
                       pixnetProvider.searchText = instagramProvider.searchText = youtubeProvider.searchText = value;
-                      // try {
-                      //   pixnetProvider.search();
-                      // } finally {
-                      //   try {
-                      //     youtubeProvider.search();
-                      //   } finally {
-
-                      //   }
-                      // }
                       try {
-                        instagramProvider.search();
-                      }
-                      finally {
+                        pixnetProvider.search();
+                      } finally {
+                        try {
+                          instagramProvider.search();
+                        } finally {
+                          try {
+                            youtubeProvider.search();
+                          }
+                          finally {
 
+                          }
+                        }
                       }
                     },
                   ),
