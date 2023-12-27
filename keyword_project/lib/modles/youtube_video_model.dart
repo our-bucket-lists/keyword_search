@@ -9,57 +9,33 @@ YoutubeVideo youtubeVideoFromJson(String str) => YoutubeVideo.fromJson(json.deco
 String youtubeVideoToJson(YoutubeVideo data) => json.encode(data.toJson());
 
 class YoutubeVideo {
-    // String kind;
-    // String etag;
     List<Item> items;
-    // PageInfo pageInfo;
 
     YoutubeVideo({
-        // required this.kind,
-        // required this.etag,
         required this.items,
-        // required this.pageInfo,
     });
 
     factory YoutubeVideo.fromJson(Map<String, dynamic> json) => YoutubeVideo(
-        // kind: json["kind"],
-        // etag: json["etag"],
         items: List<Item>.from(json["items"].map((x) => Item.fromJson(x))),
-        // pageInfo: PageInfo.fromJson(json["pageInfo"]),
     );
 
     Map<String, dynamic> toJson() => {
-        // "kind": kind,
-        // "etag": etag,
         "items": List<dynamic>.from(items.map((x) => x.toJson())),
-        // "pageInfo": pageInfo.toJson(),
     };
 }
 
 class Item {
-    // String kind;
-    // String etag;
-    // String id;
     Statistics statistics;
 
     Item({
-        // required this.kind,
-        // required this.etag,
-        // required this.id,
         required this.statistics,
     });
 
     factory Item.fromJson(Map<String, dynamic> json) => Item(
-        // kind: json["kind"],
-        // etag: json["etag"],
-        // id: json["id"],
         statistics: json.containsKey("statistics")?Statistics.fromJson(json["statistics"]):Statistics(viewCount: "0", likeCount: "0", favoriteCount: "0", commentCount: "0"),
     );
 
     Map<String, dynamic> toJson() => {
-        // "kind": kind,
-        // "etag": etag,
-        // "id": id,
         "statistics": statistics.toJson(),
     };
 }
@@ -91,23 +67,3 @@ class Statistics {
         "commentCount": commentCount,
     };
 }
-
-// class PageInfo {
-//     int totalResults;
-//     int resultsPerPage;
-
-//     PageInfo({
-//         required this.totalResults,
-//         required this.resultsPerPage,
-//     });
-
-//     factory PageInfo.fromJson(Map<String, dynamic> json) => PageInfo(
-//         totalResults: json["totalResults"],
-//         resultsPerPage: json["resultsPerPage"],
-//     );
-
-//     Map<String, dynamic> toJson() => {
-//         "totalResults": totalResults,
-//         "resultsPerPage": resultsPerPage,
-//     };
-// }
