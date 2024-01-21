@@ -82,13 +82,13 @@ class Feed {
     factory Feed.fromJson(Map<String, dynamic> json) => Feed(
         email: '',
         ig: '',
-        memberUniqid: json["member_uniqid"],
-        displayName: json["display_name"],
-        title: json["title"],
-        link: json["link"],
-        hit: json["hit"],
-        createdAt: DateTime.fromMillisecondsSinceEpoch(json["created_at"]*1000),
-        replyCount: json["reply_count"],
+        memberUniqid: json.containsKey("member_uniqid")?json["member_uniqid"]:"",
+        displayName: json.containsKey("display_name")?json["display_name"]:"",
+        title: json.containsKey("title")?json["title"]:"",
+        link: json.containsKey("link")?json["link"]:"",
+        hit: json.containsKey("hit")?json["hit"]:0,
+        createdAt: json.containsKey("created_at")?DateTime.fromMillisecondsSinceEpoch(json["created_at"]*1000):DateTime.now(),
+        replyCount: json.containsKey("reply_count")?json["reply_count"]:0,
     );
 
     Map<String, dynamic> toJson() => {
