@@ -131,6 +131,21 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
       }
     }
 
+    Widget getSelectedTokenUpdate() {
+      switch (_selectedPlatform.elementAt(0)) {
+        case Platforms.instagram:
+          return FilledButton.tonalIcon(
+            onPressed: () async {
+              await instagramProvider.updateToken();
+            },
+            label: Text('更新權杖', style: Theme.of(context).textTheme.labelMedium,),
+            icon: const Icon(Icons.key,),
+          );
+        default:
+          return Container();
+      }
+    }
+
     Widget getSelectedExportButton() {
       switch (_selectedPlatform.elementAt(0)) {
         case Platforms.pixnet:
@@ -370,6 +385,11 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                   // Filter
                   Expanded(
                     child: _getSelectedFilter(),
+                  ),
+                  // Token Update
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: getSelectedTokenUpdate(),
                   ),
                   // Export
                   Padding(
