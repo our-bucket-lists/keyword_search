@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:csv/csv.dart';
@@ -12,10 +13,12 @@ import 'package:keyword_project/modles/ig_media_search_model.dart';
 
 
 class InstagramSearchProvider extends ChangeNotifier {
+
   // For API request
   static const _apiEndpoint = 'graph.facebook.com';
-  static const _userId = '17841400502414397';
-  static const _token = 'EAAYs6H9ZCiEEBO6wLy00PaWQS9GtP5yyCV2ZCZC7YcI9yk00xRhwaQY1YQl8J3grLsCZCoFInftsRLqlpNSs9nIyOFLWCT6xvTaGlOrxj9t8FcTiwVSQqqQB2kC617AP2HeeQM6QyG6Po8YQZBFdaZBCi27DAZCpUhbOQXqOkaorYQbzo7yJdOvTZAjR8IpoqTYtbG287MhI8DkyJtJWMO5u9nRpHQqg';
+  String _userId = '';
+  List _tokens = [];
+  int _tokenId = 0;
   String _searchText = '';
   String _nextPageLink = '';
   int _currentPage = 0;
@@ -43,36 +46,10 @@ class InstagramSearchProvider extends ChangeNotifier {
 
   // Seter
   set searchText(String searchText) {
-    _searchText = searchText;
     // For API request
     _searchText = searchText;
-    _nextPageLink = '';
-    _currentPage = 0;
     notifyListeners();
-
-    // For API response
-    _hashtagId = '';
-    _searchResults = IgMediaSearch(data: [], paging: Paging(cursors: Cursors(after: ''), next: ''));
-    notifyListeners();
-
-    // For Data storage
-    _originalData = <Datum>[];
-    _displayedData = <Datum>[];
-    _selectedItems = <String>{};
-    _postIdSet = HashSet<String>();
-    notifyListeners();    
-
-    // For data sorting and filtering
-    _filterCriteria = FilterCriteria();
-    _isAscendingSortedColumn = List.generate(5, (index) => false);
-    _isSortByRelevance = true; 
-    _sortedColumnIndex = 0;
-    isLoadMoreDisplayed = false;
-
-    // For loading indicator
-    _isLoading = false;
-
-    notifyListeners();
+    _initArguments();
   }
   set isSortByRelevance(bool input) {
     _isSortByRelevance = input;
@@ -101,6 +78,7 @@ class InstagramSearchProvider extends ChangeNotifier {
 
 
   // Geter
+  int get tokenId => _tokenId;
   String get searchText => _searchText;
   List<Datum> get originalData => _originalData;
   List<Datum> get displayedData => _displayedData;
@@ -247,7 +225,7 @@ class InstagramSearchProvider extends ChangeNotifier {
       try {
         isLoading = true;
         log('Searching Started on Instagram...');
-        _currentPage += 1;
+        await _loadToken();
         await _getHashTagIdApi();
         await _getSearchResultApi();
 
@@ -266,17 +244,62 @@ class InstagramSearchProvider extends ChangeNotifier {
     if (_nextPageLink.isNotEmpty) {
       try {
         isLoading = true;
-        log('Loading more is started on YouTube...');
-        _currentPage += 1;
+        log('Loading more is started on Instagram...');
+        await _loadToken();
         await _getSearchResultApi();
 
-        log('Loading more is completed on YouTube!');
+        log('Loading more is completed on Instagram!');
         log('Current Page = $_currentPage');
         notifyListeners();
       } finally {
         isLoading = false;
       }
     }
+  }
+
+  updateToken() async {
+    await _loadToken();
+    _tokenId = (_tokenId+1)%_tokens.length;
+    log('Instagram Token Id = $_tokenId');
+    notifyListeners();
+    _initArguments();
+    await search();
+  }
+
+  _initArguments() {
+    _nextPageLink = '';
+    _currentPage = 0;
+    notifyListeners();
+
+    // For API response
+    _hashtagId = '';
+    _searchResults = IgMediaSearch(data: [], paging: Paging(cursors: Cursors(after: ''), next: ''));
+    notifyListeners();
+
+    // For Data storage
+    _originalData = <Datum>[];
+    _displayedData = <Datum>[];
+    _selectedItems = <String>{};
+    _postIdSet = HashSet<String>();
+    notifyListeners();    
+
+    // For data sorting and filtering
+    _filterCriteria = FilterCriteria();
+    _isAscendingSortedColumn = List.generate(5, (index) => false);
+    _isSortByRelevance = true; 
+    _sortedColumnIndex = 0;
+    isLoadMoreDisplayed = false;
+
+    // For loading indicator
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> _loadToken() async { 
+    final String jsonString = await rootBundle.loadString('assets/data/token.json', cache: false); 
+    Map data = jsonDecode(jsonString); 
+    _tokens = data['meta']['tokens'].toList(); 
+    _userId = data['meta']['userId']; 
   }
 
   _getHashTagIdApi() async {
@@ -286,7 +309,7 @@ class InstagramSearchProvider extends ChangeNotifier {
       {
         'q': _searchText,
         'user_id': _userId,
-        'access_token': _token,
+        'access_token': _tokens[_tokenId],
       }
     );
 
@@ -316,7 +339,7 @@ class InstagramSearchProvider extends ChangeNotifier {
         {
           'fields': 'caption,comments_count,like_count,permalink,timestamp',
           'user_id': _userId,
-          'access_token': _token,
+          'access_token': _tokens[tokenId],
           'limit': '50',
         }
       );
@@ -325,31 +348,40 @@ class InstagramSearchProvider extends ChangeNotifier {
     }
 
     try {
-      http.Response response = await http.get(uri);
-      switch (response.statusCode) {
-        case 200:
-          _searchResults = igMediaSearchFromJson(response.body);
-          _nextPageLink = _searchResults.paging.next;
-          currentResults =  _searchResults.data.where((element) => !_postIdSet.contains(element.id)).toList();
-          _postIdSet.addAll(currentResults.map((e) => e.id).toSet());
-          await Future.wait(
-            currentResults.map(
-              (element) async => element.username = await _getMoreIgInfo(queryUrl: Uri.parse(element.permalink))
-            )
-          ).then(
-            (List response) => log('All Instagram Searching processed.')
-          ).catchError((err) {
-            log('[ERROR] Http Request Execution Error: ${err.toString()}');
-            throw Exception(throw err);
-          });
-
-          _displayedData.addAll(_onFilter(currentResults));
-          _originalData.addAll(currentResults);
+      for (int i = 0; i < 5; i++) {
+        http.Response response = await http.get(uri);
+        switch (response.statusCode) {
+          case 200:
+            _searchResults = igMediaSearchFromJson(response.body);
+            _nextPageLink = _searchResults.paging.next;
+            currentResults =  _searchResults.data.where((element) => !_postIdSet.contains(element.id)).toList();
+            if (50 <= _searchResults.data.where((element) => !_postIdSet.contains(element.id)).length) {
+              _postIdSet.addAll(currentResults.map((e) => e.id).toSet());
+              _currentPage += 1;
+            }
+            break;
+          default:
+            log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
+            throw Exception(response.reasonPhrase);
+        }
+        if ( _postIdSet.length >= _currentPage*50) {
           break;
-        default:
-          log('[ERROR] Http Response Error: ${response.statusCode.toString()}');
-          throw Exception(response.reasonPhrase);
+        }
       }
+
+      await Future.wait(
+        currentResults.map(
+          (element) async => element.username = await _getMoreIgInfo(queryUrl: Uri.parse(element.permalink))
+        )
+      ).then(
+        (List response) => log('All Instagram Searching processed.')
+      ).catchError((err) {
+        log('[ERROR] Http Request Execution Error: ${err.toString()}');
+        throw Exception(throw err);
+      });
+
+      _displayedData.addAll(_onFilter(currentResults));
+      _originalData.addAll(currentResults);
     } catch (err) {
       log('[ERROR] Http Request Execution Error: ${err.toString()}');
       rethrow;
