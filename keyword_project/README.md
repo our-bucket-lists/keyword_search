@@ -28,6 +28,7 @@ docker push simonzhao219/keyword-search-ui-develop:latest
 - Release version
 ```
 docker run -d -p 80:80 -p 443:443 --name keyword-search-ui simonzhao219/keyword-search-ui
+docker run -d -p 80:80 -p 443:443 --name keyword-search-ui -v "$(pwd)"/data:/usr/share/nginx/html/assets/assets/data  simonzhao219/keyword-search-ui
 ```
 - Develop version
 ```
